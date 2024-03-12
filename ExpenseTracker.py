@@ -435,6 +435,8 @@ window = Tk()
 window.geometry("800x600+200+80")
 window.title("Expenses List v3.0")
 
+#================================================================================================================================
+
 def main():
     expense = Expense(window)
     window.mainloop()
