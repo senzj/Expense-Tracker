@@ -163,8 +163,8 @@ class Expense:
         self.txtarea.pack(fill=BOTH, expand=1)
 
 #================================================================================================================================
-#creating db by year input
-
+    
+    # creating db by year input
     def connect_to_db(self, dbname):
         if self.conn:
             self.conn.close()  # close previous connection if it exists
@@ -204,7 +204,8 @@ class Expense:
 
 
 #================================================================================================================================
-
+    
+    # adding item into the (year).db database.
     def add_item(self):
         date = f"{self.item_month.get()} {self.item_day.get()}, {self.item_year.get()}"
         date_month = f"{self.item_month.get()}"
@@ -252,7 +253,8 @@ class Expense:
             self.item_year.set(today.year)
 
 #================================================================================================================================
-        
+
+    # displaying all items from the current year from (year).db
     def display_item(self):
         self.txtarea.delete('1.0',END)
         self.header()
@@ -294,6 +296,7 @@ class Expense:
 
 #================================================================================================================================
 
+    # displaying all items with specified month, day (optional), along with year to know which database to open
     def display_specified(self):
         self.txtarea.delete('1.0', END)
         month = self.display_m.get()
@@ -371,7 +374,8 @@ class Expense:
         self.display_c.set("")
 
 #================================================================================================================================
-               
+
+    # deleting item from the selected year (year).db to delete the specified item with specified date.        
     def delete_item(self):
         name = self.delete_name.get()
         month = self.delete_m.get()
@@ -401,7 +405,8 @@ class Expense:
                 self.delete_y.set(today_delete.year)
 
 #================================================================================================================================
-        
+    
+    # setting all entries into blank
     def clear_item(self):
         op = messagebox.askyesno("Clearing input fields..","Do you want to Clear Everything?")
         if op > 0:
@@ -418,7 +423,8 @@ class Expense:
             return
 
 #================================================================================================================================  
-        
+
+    # header for the database display   
     def header(self):
         width = 44
         self.txtarea.insert(END, f"{'=' * width}\n")
@@ -426,7 +432,8 @@ class Expense:
         self.txtarea.insert(END, f"{'=' * width}\n")
 
 #================================================================================================================================
-        
+    
+    # header for the database display   
     def header_month(self):
         month = self.display_m.get()
         category = self.display_c.get()
@@ -436,7 +443,8 @@ class Expense:
         self.txtarea.insert(END, f"{'=' * width}\n")
 
 #================================================================================================================================
-        
+    
+    # header for the database display   
     def header_ctgy(self):
         month = self.display_m.get()
         category = self.display_c.get()
@@ -448,7 +456,7 @@ class Expense:
     
 #================================================================================================================================
 
-
+# GUI declaration
 global window
 window = Tk()
 window.geometry("800x600+200+80")
@@ -456,6 +464,7 @@ window.title("Expenses List v3.0")
 
 #================================================================================================================================
 
+# Declare so GUI wont close
 def main():
     expense = Expense(window)
     window.mainloop()
