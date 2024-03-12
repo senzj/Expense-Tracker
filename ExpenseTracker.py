@@ -165,37 +165,6 @@ class Expense:
 #================================================================================================================================
 #creating db by year input
 
-    # def connect_to_db(self, dbname):
-    #     if self.conn:
-    #         self.conn.close()  # close previous connection if it 
-        
-    #     current_year = datetime.now().year
-    #     # current_year = "banana"
-    #     db_name = f"{current_year}.db"
-    #     # db_name = f"2024.db"
-    #     self.conn = sqlite3.connect(db_name)
-    #     self.cur = self.conn.cursor()
-        
-    #     # Here you can add code to handle the case where the database does not exist
-    #     if not os.path.exists(db_name):
-    #         print(f"Creating Database {db_name}...")
-    #         print(f"Creating table {self.table_name}...")
-    #         query = f'''CREATE TABLE IF NOT EXISTS "{self.table_name}" (
-    #                     date TEXT,
-    #                     quantity INTEGER,
-    #                     category TEXT,
-    #                     name TEXT,
-    #                     price REAL
-    #                     )'''
-
-    #         # Execute the query
-    #         self.cur.execute(query)
-    #         print(f"{dbname} database created.")
-
-    #     else:
-    #         print(f"Database {db_name} already exist")
-    #         print(f"The table {self.table_name} already exists.")
-
     def connect_to_db(self, dbname):
         if self.conn:
             self.conn.close()  # close previous connection if it exists
