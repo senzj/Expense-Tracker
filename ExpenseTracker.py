@@ -164,7 +164,7 @@ class Expense:
 
 #================================================================================================================================
     
-    # creating db by year input
+    # creating or checking for existing db in the directory by year
     def connect_to_db(self, dbname):
         if self.conn:
             self.conn.close()  # close previous connection if it exists
@@ -201,7 +201,6 @@ class Expense:
 
         self.conn = sqlite3.connect(db_name)
         self.cur = self.conn.cursor()
-
 
 #================================================================================================================================
     
