@@ -164,8 +164,6 @@ class Expense:
 #================================================================================================================================
 
     def connect_to_db(self, dbname):
-        
-
         if self.conn:
             self.conn.close()  # close previous connection if it exists
 
@@ -218,7 +216,13 @@ class Expense:
         elif prc == 0 or prc < 0 or prc == "" or prc == " ":
             messagebox.showerror("Invalid Price", "Please Enter a Valid Item Price.")
         else:
+            #db data transfer debugging
             print(date)
+            print(f"Item name: {name}")
+            print(f"Quantity: {num}")
+            print(f"Payment Method: {ctgy}")
+            print(f"Price: {prc}")
+
             query = f'INSERT INTO "{table_name}" (date, quantity, category, name, price) VALUES (?, ?, ?, ?, ?)'
             self.cur.execute(query, (date, num, ctgy ,name, prc))
             self.conn.commit()
