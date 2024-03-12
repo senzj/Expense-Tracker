@@ -217,11 +217,13 @@ class Expense:
             messagebox.showerror("Invalid Price", "Please Enter a Valid Item Price.")
         else:
             #db data transfer debugging
-            print(date)
-            print(f"Item name: {name}")
+            print("\nAdding item details...")
+            print(f"Date: {date}")
             print(f"Quantity: {num}")
-            print(f"Payment Method: {ctgy}")
+            print(f"Item name: {name}")
             print(f"Price: {prc}")
+            print(f"Payment Method: {ctgy}")
+            
 
             query = f'INSERT INTO "{table_name}" (date, quantity, category, name, price) VALUES (?, ?, ?, ?, ?)'
             self.cur.execute(query, (date, num, ctgy ,name, prc))
