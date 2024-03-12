@@ -43,14 +43,15 @@ class Expense:
         self.catgs = [ 'Cash', 'GCash', 'Cheque', 'Others',]
         self.months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
         self.days = [str(i) for i in range(1, 32)]
+        
+        #database things
         self.table_name = "expenses"
-
         self.dbname = StringVar()
         self.conn = None
         self.cur = None
         self.connect_to_db(self.dbname)
-
         
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
         #Item Entry
         entries = LabelFrame(self.window, bd=10, relief=GROOVE, text="Item Entry", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
@@ -166,9 +167,11 @@ class Expense:
 
     # def connect_to_db(self, dbname):
     #     if self.conn:
-    #         self.conn.close()  # close previous connection if it exists
-
-    #     db_name = f"{dbname}.db"
+    #         self.conn.close()  # close previous connection if it 
+        
+    #     current_year = datetime.now().year
+    #     # current_year = "banana"
+    #     db_name = f"{current_year}.db"
     #     # db_name = f"2024.db"
     #     self.conn = sqlite3.connect(db_name)
     #     self.cur = self.conn.cursor()
@@ -187,9 +190,49 @@ class Expense:
 
     #         # Execute the query
     #         self.cur.execute(query)
+    #         print(f"{dbname} database created.")
+
     #     else:
     #         print(f"Database {db_name} already exist")
     #         print(f"The table {self.table_name} already exists.")
+
+    def connect_to_db(self, dbname):
+        if self.conn:
+            self.conn.close()  # close previous connection if it exists
+
+        # current_year = "banana"
+        current_year = datetime.now().year
+        db_name = f"{current_year}.db"
+
+        # Check if the database file exists before connecting
+        if not os.path.exists(db_name):
+            print(f"Creating Database named {db_name}...")
+            print(f"Creating table named {self.table_name}...")
+
+            self.conn = sqlite3.connect(db_name)
+            self.cur = self.conn.cursor()
+
+            # Create the table
+            query = f'''CREATE TABLE IF NOT EXISTS "{self.table_name}" (
+                        date TEXT,
+                        quantity INTEGER,
+                        category TEXT,
+                        name TEXT,
+                        price REAL
+                        )'''
+
+            # Execute the query
+            self.cur.execute(query)
+            
+            print("Database and Table created sucessfully!")
+
+        else:
+            print(f"Database {db_name} already exist")
+            print(f"The table {self.table_name} already exists.")
+
+        self.conn = sqlite3.connect(db_name)
+        self.cur = self.conn.cursor()
+
 
 #================================================================================================================================
 
