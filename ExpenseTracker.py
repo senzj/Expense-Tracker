@@ -16,9 +16,25 @@ import os
 # cur = conn.cursor()
     
 class Expense:
+
+    #initialization
     def __init__(self, window):
-        #declarations
+
+        # Declarations
         self.window = window
+        self.window.title("Expenses List v3.0")
+
+        self.setup_grid()
+        self.Static_GUI_Widget()
+
+        #In progress..
+        # self.Dynamic_GUI_Widget()
+
+#================================================================================================================================
+    #defining variables 
+    def setup_var(self):
+                #debugs
+        print("Starting Program...")
         
         self.date = datetime.today()
         self.item_date = StringVar()
@@ -50,8 +66,148 @@ class Expense:
         self.conn = None
         self.cur = None
         self.connect_to_db(self.dbname)
+
+        print("Program Ready.")
+
+#================================================================================================================================
+    
+    #dynanic widget and GUI display [in progress]
+    def Dynamic_GUI_Widget(self):
+        self.setup_var()
+
+        # # Item Entry
+        # entries = LabelFrame(self.window, bd=10, relief=GROOVE, text="Item Entry", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
+        # entries.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
+        # entries.config(width=345, height=250)
+
+        # date_label = tk.Label(entries, text="Date ", bg="sky blue").grid(row=1,column=0, pady=10, sticky="nsew")
         
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        # date_month = ttk.Combobox(entries, textvariable=self.item_month, values=self.months, width=10)
+        # date_month.grid(row=1, column=1, pady=10,sticky="nsew")
+        # date_month.insert(0, self.date.strftime('%B'))
+        
+        # date_day = ttk.Combobox(entries, textvariable=self.item_day, values=self.days, width=3)
+        # date_day.grid(row=1, column=2, sticky="nsew")
+        # date_day.insert(0, self.date.strftime('%d'))
+        
+        # date_year = tk.Entry(entries, textvariable=self.item_year, relief=SUNKEN, width=10)
+        # date_year.insert(0, self.date.strftime('%Y'))
+        # date_year.grid(row=1, column=3, sticky="nsew")
+        
+        # self.item_date = f"{self.item_month.get()} {self.item_day.get()}, {self.item_year.get()}"
+
+        # qnty_label = tk.Label(entries, text="Item Quantity", bg="sky blue").grid(row=2, column=0, sticky="nsew")
+        # qnty_entry = tk.Spinbox(entries, textvariable=self.item_qty, from_=1, to=9999, width=18, relief=SUNKEN)
+        # qnty_entry.grid(row=2, column=1, pady=4, columnspan=3, sticky="nsew")
+
+        # ctgy_label = tk.Label(entries, text="Payment Method", bg="sky blue").grid(row=3,column=0, sticky="nsew")
+        # ctgy_entry = ttk.Combobox(entries, textvariable=self.item_ctgy, width=17, values=self.catgs)
+        # ctgy_entry.grid(row=3,column=1,pady=4, columnspan=3, sticky="nsew")
+        # ctgy_entry.insert(0, "Cash")
+
+        # item_label = tk.Label(entries, text="Item Name", bg="sky blue").grid(row=4,column=0, sticky="nsew")
+        # item_entry = tk.Entry(entries, textvariable=self.item_name, relief=SUNKEN)
+        # item_entry.grid(row=4,column=1,pady=4, columnspan=3, sticky="nsew")
+
+        # prc_label = tk.Label(entries, text="Item Price", bg="sky blue").grid(row=5,column=0, sticky="nsew")
+        # prc_entry = tk.Entry(entries, textvariable=self.item_prc, relief=SUNKEN)
+        # prc_entry.grid(row=5, column=1, columnspan=3, sticky="nsew")
+
+        # # Add more items
+        # add_btn = tk.Button(entries, text="Add Item", command=self.add_item, width=11)
+        # add_btn.grid(row=6,column=3, pady=4, sticky="nsew", padx=5)
+        # display_btn = tk.Button(entries, text="Display All", command=self.display_item, width=11)
+        # display_btn.grid(row=7,column=3, sticky="nsew", padx=5)
+
+        # # Display list of items by month
+        # display_chng = LabelFrame(self.window, bd=10, relief=GROOVE, text="Display Specified Items", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
+        # display_chng.grid(row=1, column=1, padx=0, pady=0, sticky="nsew")
+        # display_chng.place(width=345, height=140)
+
+        # display_c_label = tk.Label(display_chng, text="Category(Optional)", bg="sky blue").grid(row=1, column=0, sticky="nsew")
+        # display_c_entry = ttk.Combobox(display_chng, textvariable=self.display_c, width=17, values=self.catgs)
+        # display_c_entry.grid(row=1, column=1, sticky="nsew")
+        
+        # display_m_label = tk.Label(display_chng, text="Month", bg="sky blue").grid(row=2, column=0, sticky="nsew")
+        # display_m_entry = ttk.Combobox(display_chng, textvariable=self.display_m, width=17, values=self.months)
+        # display_m_entry.grid(row=2, column=1, sticky="nsew")
+        # display_m_entry.insert(0, self.date.strftime('%B'))
+        
+        # display_d_label = tk.Label(display_chng, text="Day (Optional)", bg="sky blue").grid(row=3, column=0, sticky="nsew")
+        # display_d_entry = ttk.Combobox(display_chng, textvariable=self.display_d, width=17, values=self.days)
+        # display_d_entry.grid(row=3, column=1, sticky="nsew")
+        
+        # display_yr_label = tk.Label(display_chng, text="Year", bg="sky blue").grid(row=4, column=0, sticky="nsew")
+        # display_yr_entry = tk.Entry(display_chng, textvariable=self.display_y)
+        # display_yr_entry.grid(row=4, column=1, sticky="nsew")
+        # display_yr_entry.insert(0, self.date.strftime('%Y'))
+        
+        # display_btn = tk.Button(display_chng, text="Show", command=self.display_specified, width=10).grid(row=4,column=2, sticky="nsew", padx=5)
+
+        # # Delete an item from database specified by name and date including month day year
+        # delete = LabelFrame(self.window, bd=10, relief=GROOVE, text="Delete Item", font=("times new roman", 20,"bold"), fg="black", bg="sky blue")
+        # delete.grid(row=2, column=1, padx=0, pady=0, sticky="nsew")
+        # delete.place(width=345, height=210)
+        
+
+        # delete_item_label = tk.Label(delete, text="Enter an Item", bg="sky blue").grid(row=1, column=0, sticky="nsew")
+        # delete_item_entry = tk.Entry(delete, textvariable=self.delete_name)
+        # delete_item_entry.grid(row=1, column=1, sticky="nsew", pady=4)
+        
+        # delete_m_label = tk.Label(delete, text="Enter Month", bg="sky blue").grid(row=2, column=0, sticky="nsew")
+        # delete_m_entry = ttk.Combobox(delete, textvariable=self.delete_m, values=self.months, width=17)
+        # delete_m_entry.grid(row=2, column=1, sticky="nsew")
+        # delete_m_entry.insert(0, self.date.strftime('%B'))
+        
+        # delete_d_label = tk.Label(delete, text="Enter Day", bg="sky blue").grid(row=3, column=0, sticky=W)
+        # delete_d_entry = ttk.Combobox(delete, textvariable=self.delete_d, values=self.days, width=17)
+        # delete_d_entry.grid(row=3, column=1,sticky="nsew")
+        # delete_d_entry.insert(0, self.date.strftime('%d'))
+        
+        # delete_y_label = tk.Label(delete, text="Enter Year", bg="sky blue").grid(row=4, column=0, sticky="nsew")
+        # delete_y_entry = tk.Entry(delete, textvariable=self.delete_y)
+        # delete_y_entry.grid(row=4, column=1, sticky="nsew")
+        # delete_y_entry.insert(0, self.date.strftime('%Y'))
+        
+        # display_btn = tk.Button(delete, text="Delete Item", command=self.delete_item, width=15)
+        # display_btn.grid(row=4, column=2, sticky="nsew", padx=5)
+        
+        # # Clearing input field
+        # clr_btn = tk.Button(delete, text="Clear Entries", command=self.clear_item, width=15)
+        # clr_btn.grid(row=5, column=2, sticky="nsew", padx=5)
+        
+        # # Refresh
+        # display_btn = tk.Button(delete, text="Refresh List", command=self.display_specified, width=15)
+        # display_btn.grid(row=6, column=2, sticky="nsew", padx=5)
+
+        # # Display items list area + by months and year
+        # display = LabelFrame(self.window, bd=10, relief=GROOVE, text="Expenses List", font=("times new roman", 20,"bold"), fg="black", bg="sky blue")
+        # display.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        # display.place(width=450, height=600)
+        
+        # bill_title = Label(display, text="Your List of Expenses", font="arial 15 bold", bd=7, relief=GROOVE)
+        # bill_title.pack(fill=X)
+
+        # scrol_y = Scrollbar(display, orient=VERTICAL) 
+        # self.txtarea = Text(display, yscrollcommand=scrol_y.set)
+        # scrol_y.pack(side=RIGHT, fill=Y)
+        # scrol_y.config(command=self.txtarea.yview)
+        # self.txtarea.pack(fill=BOTH, expand=2)
+
+        # # Configure grid rows and columns to resize dynamically
+        # self.window.grid_rowconfigure(0, weight=1)
+        # self.window.grid_rowconfigure(1, weight=1)
+        # self.window.grid_rowconfigure(2, weight=1)
+        # self.window.grid_columnconfigure(0, weight=1)
+        # self.window.grid_columnconfigure(1, weight=1)
+
+
+#================================================================================================================================
+    
+    #dynanic widget and GUI display [done]
+    def Static_GUI_Widget(self):
+
+        self.setup_var()
 
         #Item Entry
         entries = LabelFrame(self.window, bd=10, relief=GROOVE, text="Item Entry", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
@@ -152,8 +308,8 @@ class Expense:
         display.place(x=3, y=1, width=450, height=600)
         
         #display
-        display = LabelFrame(window, bd=10, relief=GROOVE)
-        display.place(x=20, y=40, width=410, height=535)
+        display = LabelFrame(self.window, bd=10, relief=GROOVE)
+        display.place(x=9, y=35, width=435, height=555)
         bill_title=Label(display, text="Your List of Expenses", font="arial 15 bold", bd=7, relief=GROOVE).pack(fill=X)
 
         scrol_y = Scrollbar(display, orient=VERTICAL) 
@@ -164,7 +320,7 @@ class Expense:
 
 #================================================================================================================================
     
-    # creating or checking for existing db in the directory by year
+    # creating or checking for existing db in the directory by year [done]
     def connect_to_db(self, dbname):
         if self.conn:
             self.conn.close()  # close previous connection if it exists
@@ -182,13 +338,15 @@ class Expense:
             self.cur = self.conn.cursor()
 
             # Create the table
+            
             query = f'''CREATE TABLE IF NOT EXISTS "{self.table_name}" (
-                        date TEXT,
-                        quantity INTEGER,
-                        category TEXT,
-                        name TEXT,
-                        price REAL
-                        )'''
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT,
+                    quantity INTEGER,
+                    category TEXT,
+                    name TEXT,
+                    price REAL
+                    )'''
 
             # Execute the query
             self.cur.execute(query)
@@ -204,7 +362,7 @@ class Expense:
 
 #================================================================================================================================
     
-    # adding item into the (year).db database.
+    # adding item into the (year).db database. [done]
     def add_item(self):
         date = f"{self.item_month.get()} {self.item_day.get()}, {self.item_year.get()}"
         date_month = f"{self.item_month.get()}"
@@ -235,7 +393,7 @@ class Expense:
             print(f"Quantity: {num}")
             print(f"Item name: {name}")
             print(f"Price: {prc}")
-            print(f"Payment Method: {ctgy}")
+            print(f"Payment Method: {ctgy}\n")
             
 
             query = f'INSERT INTO "{table_name}" (date, quantity, category, name, price) VALUES (?, ?, ?, ?, ?)'
@@ -251,31 +409,44 @@ class Expense:
             self.item_month.set(today.strftime('%B'))
             self.item_year.set(today.year)
 
+        print(f"Items Added Succesfully!")
+
 #================================================================================================================================
 
-    # displaying all items from the current year from (year).db
+    # displaying all items from the current year from (year).db [done]
     def display_item(self):
+
         self.txtarea.delete('1.0',END)
         self.header()
         self.cur.execute("""SELECT * FROM expenses""")
         expenses = self.cur.fetchall()
 
         self.cur.execute("""SELECT date, SUM(price) FROM expenses""")
-        self.total_expenses = self.cur.fetchone()
+        total_expenses = self.cur.fetchone()
 
         # Group expenses by month and date
         expenses_by_month_and_date = {}
         for expense in expenses:
+
+            # date = expense[0] #if database has no primary key ID
             date = expense[1]
             month = date.split(' ')[0]
+
             if month not in expenses_by_month_and_date:
                 expenses_by_month_and_date[month] = {}
             if date not in expenses_by_month_and_date[month]:
                 expenses_by_month_and_date[month][date] = []
             expenses_by_month_and_date[month][date].append(expense)
 
+            #debug 
+            #get -> (date(m, dd, yyy), quantity, type, name, price)
+            # print(expense)
+            # print(date)
+
+
         # Create a dictionary to convert month names to numbers
         month_converter = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12}
+
 
         # Sort months and dates in ascending order
         sorted_months = sorted(expenses_by_month_and_date.keys(), key=lambda x: month_converter[x])
@@ -287,15 +458,30 @@ class Expense:
                 expenses = expenses_by_month_and_date[month][date]
                 self.txtarea.insert(END, f"{date} \n")
                 for expense in expenses:
-                    self.txtarea.insert(END, f">[{expense[3]}]\n  ~ {expense[2]}x {expense[4]}\t\t\t\t- ₱{expense[5]}\n")
-                self.txtarea.insert(END, f"\n")
+                    total_item_price = expense[2] * expense[5]
+                    # display format of the outcome. (date[0], quantity[1], type[2], name[3], price[4])
+
+                    # default display format (no individual counting, merged or totaled counts)
+                    self.txtarea.insert(END, f"[{expense[3]}]\n  ~ {expense[2]}x {expense[4]}\t\t\t\t- ₱{expense[5]}\n")
+
+                    # alternative display format (with individual counting) (grocery format)
+                    # self.txtarea.insert(END, f"[{expense[2]}] \t {expense[3]:<10}\t ₱{expense[4]}  x{expense[1]}\t\t\t₱{total_item_price}\t\t")
+                    
+                    self.txtarea.insert(END, f"\n")
+
+
 
         self.txtarea.insert(END, f"\n------------------------------------------\n")
-        self.txtarea.insert(END, f"Total Monthly expenses \t\t\t\t= ₱{self.total_expenses[1]}\n")
+        self.txtarea.insert(END, f"Total Monthly expenses \t\t\t\t= ₱{total_expenses[1]}\n")
 
+        # total_expenses -> (date, sum)
+        
+        print("\ndisplaying all item...")
+        print("Item retrieved.")
+            
 #================================================================================================================================
 
-    # displaying all items with specified month, day (optional), along with year to know which database to open
+    # displaying all items with specified month, day (optional), along with year to know which database to open [done]
     def display_specified(self):
         self.txtarea.delete('1.0', END)
         month = self.display_m.get()
@@ -304,7 +490,7 @@ class Expense:
         category = self.display_c.get()
 
         if month == "" or month == " ":
-            messagebox.showerror("Invalid Month", "Please Enter a Valid Month (E.G. June, July, March, April).")
+            messagebox.showerror("Invalid Month", "Please Enter a Valid Month (E.G. June, July).")
         elif year == "" or year == " ":
             messagebox.showerror("Invalid Year", "Please Enter a Valid Year (E.G. 2020).")
         else:
@@ -362,6 +548,14 @@ class Expense:
                     #expense[4] - item name
                     #expense[5] - price
                     self.txtarea.insert(END, f">[{expense[3]}]\n  ~ {expense[2]}x {expense[4]}\t\t\t\t- ₱{expense[5]}\n")
+
+
+                    #expense[0] - date
+                    #expense[1] - qty
+                    #expense[2] - category
+                    #expense[3] - item name
+                    #expense[4] - price
+                    # self.txtarea.insert(END, f">[{expense[2]}]\n  ~ {expense[1]}x {expense[3]}\t\t\t\t- ₱{expense[4]}\n")
                 self.txtarea.insert(END, f"\n")
 
             if day == "" or day == " ":
@@ -372,9 +566,11 @@ class Expense:
                 self.txtarea.insert(END, f"Total Expenses for {month} {day}\t\t\t\t= ₱{self.total_expenses[1]}\n")
         self.display_c.set("")
 
+        print(f"\nItems with the date of {month} {day}, {year}. Successfully Retrieved!")
+
 #================================================================================================================================
 
-    # deleting item from the selected year (year).db to delete the specified item with specified date.        
+    # deleting item from the selected year (year).db to delete the specified item with specified date. [done]
     def delete_item(self):
         name = self.delete_name.get()
         month = self.delete_m.get()
@@ -393,8 +589,6 @@ class Expense:
         else:
             q = messagebox.askyesno("Deleting an Item...", "Do you want to Delete This Item?")
             if q > 0:
-                print(name)
-                print(date)
                 self.cur.execute('DELETE FROM expenses WHERE name = ? AND date = ?', (name, date))
                 self.conn.commit()
                 messagebox.showinfo('Success', 'Item deleted successfully!')
@@ -402,6 +596,8 @@ class Expense:
                 self.delete_d.set(today_delete.day)
                 self.delete_m.set(today_delete.strftime('%B'))
                 self.delete_y.set(today_delete.year)
+
+                print(f"\nItem {name}, from {date}, Successfully Removed.")
 
 #================================================================================================================================
     
@@ -454,19 +650,25 @@ class Expense:
         self.txtarea.insert(END, f"{'=' * width}\n")
     
 #================================================================================================================================
-
-# GUI declaration
-global window
-window = Tk()
-window.geometry("800x600+200+80")
-window.title("Expenses List v3.0")
+    
+    #dynamic layout for the screen
+    def setup_grid(self):
+        self.window.columnconfigure(0, weight=1)
+        self.window.rowconfigure(0, weight=1)
 
 #================================================================================================================================
 
 # Declare so GUI wont close
 def main():
-    expense = Expense(window)
+    # expense = Expense(window)
+    # window.mainloop()
+
+    window = Tk()  # Creating the Tkinter window instance here
+    window.geometry("800x600+200+80")
+    app = Expense(window)
     window.mainloop()
 
+#================================================================================================================================
+# loop
 if __name__ == "__main__":
     main()
