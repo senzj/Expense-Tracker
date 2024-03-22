@@ -62,10 +62,10 @@ class Expense:
         
         #database things
         self.table_name = "expenses"
-        self.dbname = StringVar()
+        # self.dbname = StringVar()
         self.conn = None
         self.cur = None
-        self.connect_to_db(self.dbname)
+        # self.connect_to_db(self.dbname)
 
         print("Program Ready.")
 
@@ -325,13 +325,12 @@ class Expense:
         if self.conn:
             self.conn.close()  # close previous connection if it exists
 
-        # current_year = "banana"
-        current_year = datetime.now().year
-        db_name = f"{current_year}.db"
+        db_name = f"{dbname}.db"
 
         # Check if the database file exists before connecting
         if not os.path.exists(db_name):
-            print(f"Creating Database named {db_name}...")
+            print(f"The Database named {db_name} does not exist..")
+            print(f"Creating Database named {db_name} now...")
             print(f"Creating table named {self.table_name}...")
 
             self.conn = sqlite3.connect(db_name)
@@ -351,7 +350,7 @@ class Expense:
             # Execute the query
             self.cur.execute(query)
             
-            print("Database and Table created sucessfully!")
+            print(f"Database {db_name} and Table {self.table_name} Created Successfully!")
 
         else:
             print(f"Database {db_name} already exist")
@@ -402,7 +401,6 @@ class Expense:
             messagebox.showinfo('Success', 'Item added successfully!')
             
             self.item_qty.set("1")
-            self.item_ctgy.set("")
             self.item_name.set("")
             self.item_prc.set("")
             self.item_day.set(today.day)
@@ -415,6 +413,10 @@ class Expense:
 
     # displaying all items from the current year from (year).db [done]
     def display_item(self):
+
+        date_year = f"{self.item_year.get()}"
+        self.connect_to_db(date_year)
+        print(f"\nOpening database {date_year}.db")
 
         self.txtarea.delete('1.0',END)
         self.header()
@@ -476,13 +478,18 @@ class Expense:
 
         # total_expenses -> (date, sum)
         
-        print("\ndisplaying all item...")
+        print("displaying all item...")
         print("Item retrieved.")
             
 #================================================================================================================================
 
     # displaying all items with specified month, day (optional), along with year to know which database to open [done]
     def display_specified(self):
+
+        date_year = f"{self.item_year.get()}"
+        self.connect_to_db(date_year)
+        print(f"\nOpening database {date_year}.db")
+        
         self.txtarea.delete('1.0', END)
         month = self.display_m.get()
         year = self.display_y.get()
@@ -572,12 +579,17 @@ class Expense:
 
     # deleting item from the selected year (year).db to delete the specified item with specified date. [done]
     def delete_item(self):
+
         name = self.delete_name.get()
         month = self.delete_m.get()
         day = self.delete_d.get()
         year = self.delete_y.get()
         today_delete = datetime.today()
         date = f"{month} {day}, {year}"
+
+        self.connect_to_db(year)
+        print(f"\nOpening database {year}.db")
+
         if name == "" or name == " ":
             alertm = messagebox.showerror("Invalid Item", "Kindly Enter a Valid Item.")
         elif month == "" or month == " ":
