@@ -212,7 +212,7 @@ class Expense:
 
         #Item Entry
         entries = LabelFrame(self.window, bd=10, relief=GROOVE, text="Item Entry", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
-        entries.place(x=453, y=1, width=345, height=250)
+        entries.place(x=453, y=1, width=345, height=200)
 
         date_label = tk.Label(entries, text="Date ", bg="sky blue").grid(row=1,column=0, pady=10, sticky="e")
         
@@ -246,13 +246,11 @@ class Expense:
         prc_entry = tk.Entry(entries, textvariable = self.item_prc, relief=SUNKEN).grid(row=5, column=1)
 
         #add more items
-        add_btn = tk.Button(entries, text="Add Item", command=self.add_item, width=11).grid(row=6,column=2, sticky=E, padx=5)
-        display_btn = tk.Button(entries, text="Display All", command=self.display_item, width=11).grid(row=7,column=2, sticky=E, padx=5)
-
+        add_btn = tk.Button(entries, text="Add", command=self.add_item, width=11).grid(row=5,column=2, padx=13)
 
         #display list of items by month
         display_chng = LabelFrame(self.window, bd=10, relief=GROOVE, text="Display Specified Items", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
-        display_chng.place(x=453, y=250, width=345, height=140)
+        display_chng.place(x=453, y=203, width=345, height=140)
 
         display_c_label = tk.Label(display_chng, text="Category(Optional)", bg="sky blue").grid(row=1, column=1, sticky=W)
         display_c_entry = ttk.Combobox(display_chng, textvariable = self.display_c, width=17, values = self.catgs).grid(row=1, column=2, sticky=E)
@@ -271,7 +269,8 @@ class Expense:
         display_yr_entry.grid(row=4, column=2, sticky=E)
         display_yr_entry.insert(0, self.date.strftime('%Y'))
         
-        display_btn = tk.Button(display_chng, text="Show", command=self.display_specified, width=10).grid(row=4,column=3, sticky=E, padx=5)
+        display_btn = tk.Button(display_chng, text="Show", command=self.display_specified, width=10).grid(row=3,column=3, sticky=E, padx=5)
+        display_btn = tk.Button(display_chng, text="Display All", command=self.display_item, width=10).grid(row=4,column=3, sticky=E, padx=5)
         
         
         #delete an item from database specified by name and date including month day year
@@ -374,7 +373,11 @@ class Expense:
         prc = self.item_prc.get()
         today = datetime.today()
         table_name = self.table_name
-        self.connect_to_db(date_year)
+
+        if self.conn is None:
+            self.connect_to_db(date_year)
+            print(f"Connected to database {date_year}.")
+        
 
         if num == 0 or num < 0:
             messagebox.showerror("Invalid Quantity", "Please Enter a Valid Item Quantity.")
@@ -400,6 +403,7 @@ class Expense:
             self.cur.execute(query, (date, num, ctgy ,name, prc))
             self.conn.commit()
             messagebox.showinfo('Success', 'Item added successfully!')
+            print(f"Items Added Succesfully!")
             
             self.item_qty.set("1")
             self.item_name.set("")
@@ -408,7 +412,7 @@ class Expense:
             self.item_month.set(today.strftime('%B'))
             self.item_year.set(today.year)
 
-        print(f"Items Added Succesfully!")
+        print(f"Process Completed Succesfully!")
 
 #================================================================================================================================
 
@@ -428,8 +432,9 @@ class Expense:
 
 
         #database actions
-        self.connect_to_db(date_year)
-        print(f"\nOpening database {date_year}.db")
+        if self.conn is None:
+            self.connect_to_db(date_year)
+            print(f"Connected to database {date_year}.")
 
         self.cur.execute("""SELECT * FROM expenses""")
         expenses = self.cur.fetchall()
@@ -521,8 +526,9 @@ class Expense:
 
         #database declaration
         date_year = f"{year}"
-        self.connect_to_db(date_year)
-        print(f"\nOpening database {date_year}.db")
+        if self.conn is None:
+            self.connect_to_db(date_year)
+            print(f"Connected to database {date_year}.")
         
 
         #display prep
