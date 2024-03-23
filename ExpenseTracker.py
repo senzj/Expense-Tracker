@@ -35,7 +35,8 @@ class Expense:
     def setup_var(self):
                 #debugs
         print("Starting Program...")
-        
+
+        self.divide = 8
         self.date = datetime.today()
         self.item_date = StringVar()
         self.item_month = StringVar()
@@ -414,17 +415,32 @@ class Expense:
     # displaying all items from the current year from (year).db [done]
     def display_item(self):
 
+        #variable declation
+        sum = 0
         date_year = f"{self.item_year.get()}"
+
+        display_width = self.txtarea.winfo_width()
+        num_dashes = display_width // self.divide
+        dashed_line = "-" * num_dashes
+        # print(display_width)
+        # print(num_dashes)
+        # print(dashed_line)
+
+
+        #database actions
         self.connect_to_db(date_year)
         print(f"\nOpening database {date_year}.db")
 
-        self.txtarea.delete('1.0',END)
-        self.header()
         self.cur.execute("""SELECT * FROM expenses""")
         expenses = self.cur.fetchall()
 
         self.cur.execute("""SELECT date, SUM(price) FROM expenses""")
         total_expenses = self.cur.fetchone()
+        
+
+        #display area
+        self.txtarea.delete('1.0',END)
+        self.header()
 
         # Group expenses by month and date
         expenses_by_month_and_date = {}
@@ -460,21 +476,23 @@ class Expense:
                 expenses = expenses_by_month_and_date[month][date]
                 self.txtarea.insert(END, f"{date} \n")
                 for expense in expenses:
+
+                    #variable declaration inside the loop
                     total_item_price = expense[2] * expense[5]
-                    # display format of the outcome. (date[0], quantity[1], type[2], name[3], price[4])
+                    sum += total_item_price
+
+                    # display format of the outcome. (id[0], date[1], quantity[2], type[3], name[4], price[5])
 
                     # default display format (no individual counting, merged or totaled counts)
-                    self.txtarea.insert(END, f"[{expense[3]}]\n  ~ {expense[2]}x {expense[4]}\t\t\t\t- ₱{expense[5]}\n")
+                    self.txtarea.insert(END, f"[{expense[3]}]\n~ {expense[4]}\t\t- {expense[2]}x ₱{expense[5]}\t\t\t= ₱{total_item_price}\n")
 
                     # alternative display format (with individual counting) (grocery format)
                     # self.txtarea.insert(END, f"[{expense[2]}] \t {expense[3]:<10}\t ₱{expense[4]}  x{expense[1]}\t\t\t₱{total_item_price}\t\t")
                     
                     self.txtarea.insert(END, f"\n")
 
-
-
-        self.txtarea.insert(END, f"\n------------------------------------------\n")
-        self.txtarea.insert(END, f"Total Monthly expenses \t\t\t\t= ₱{total_expenses[1]}\n")
+        self.txtarea.insert(END, f"\n{dashed_line}\n")
+        self.txtarea.insert(END, f"Total Monthly expenses \t\t\t\t\t= ₱{sum}\n")
 
         # total_expenses -> (date, sum)
         
@@ -486,16 +504,31 @@ class Expense:
     # displaying all items with specified month, day (optional), along with year to know which database to open [done]
     def display_specified(self):
 
-        date_year = f"{self.item_year.get()}"
-        self.connect_to_db(date_year)
-        print(f"\nOpening database {date_year}.db")
-        
-        self.txtarea.delete('1.0', END)
+        #variable declaration
+        sum = 0
         month = self.display_m.get()
         year = self.display_y.get()
         day = self.display_d.get()
         category = self.display_c.get()
 
+        display_width = self.txtarea.winfo_width()
+        num_dashes = display_width // self.divide
+        dashed_line = "-" * num_dashes
+        # print(display_width)
+        # print(num_dashes)
+        # print(dashed_line)
+
+
+        #database declaration
+        date_year = f"{year}"
+        self.connect_to_db(date_year)
+        print(f"\nOpening database {date_year}.db")
+        
+
+        #display prep
+        self.txtarea.delete('1.0', END)
+       
+        #logic starts
         if month == "" or month == " ":
             messagebox.showerror("Invalid Month", "Please Enter a Valid Month (E.G. June, July).")
         elif year == "" or year == " ":
@@ -548,32 +581,31 @@ class Expense:
                 expenses = expenses_by_date[date]
                 self.txtarea.insert(END, f"{date} \n")
                 for expense in expenses:
+                    total_item_price = expense[2] * expense[5]
+                    sum += total_item_price
                     #expense[0] - key ID
                     #expense[1] - date
                     #expense[2] - qty
                     #expense[3] - category
                     #expense[4] - item name
                     #expense[5] - price
-                    self.txtarea.insert(END, f">[{expense[3]}]\n  ~ {expense[2]}x {expense[4]}\t\t\t\t- ₱{expense[5]}\n")
+                    self.txtarea.insert(END, f"[{expense[3]}]\n~ {expense[4]}\t\t- {expense[2]}x ₱{expense[5]}\t\t\t= ₱{total_item_price}\n")
 
-
-                    #expense[0] - date
-                    #expense[1] - qty
-                    #expense[2] - category
-                    #expense[3] - item name
-                    #expense[4] - price
-                    # self.txtarea.insert(END, f">[{expense[2]}]\n  ~ {expense[1]}x {expense[3]}\t\t\t\t- ₱{expense[4]}\n")
                 self.txtarea.insert(END, f"\n")
+                self.txtarea.insert(END, f"\n{dashed_line}\n")
 
             if day == "" or day == " ":
-                self.txtarea.insert(END, f"\n------------------------------------------\n")
-                self.txtarea.insert(END, f"Total Expenses for {month}\t\t\t\t= ₱{self.total_expenses[1]}\n")
+                self.txtarea.insert(END, f"Total Expenses for {month}\t\t\t\t= ₱{sum}\n")
             else:
-                self.txtarea.insert(END, f"\n------------------------------------------\n")
-                self.txtarea.insert(END, f"Total Expenses for {month} {day}\t\t\t\t= ₱{self.total_expenses[1]}\n")
+                self.txtarea.insert(END, f"Total Expenses for {month} {day}\t\t\t\t= ₱{sum}\n")
+
         self.display_c.set("")
 
-        print(f"\nItems with the date of {month} {day}, {year}. Successfully Retrieved!")
+        #terminal log output
+        if day == "":
+            print(f"\nItems with the date of {month} {year}. Successfully Retrieved!")
+        else:
+            print(f"\nItems with the date of {month} {day}, {year}. Successfully Retrieved!")
 
 #================================================================================================================================
 
@@ -633,21 +665,35 @@ class Expense:
 
     # header for the database display   
     def header(self):
-        width = 44
-        self.txtarea.insert(END, f"{'=' * width}\n")
-        self.txtarea.insert(END, f"{f'| Over All Expense List |'.center(width, '=')}\n")
-        self.txtarea.insert(END, f"{'=' * width}\n")
+        year = self.display_y.get()
+
+        display_width = self.txtarea.winfo_width()
+        text = f"| Expense List for {year} |"
+
+        num_dashes = display_width // self.divide
+        header_dashes = "=" * num_dashes
+
+
+        self.txtarea.insert(END, f"{header_dashes}\n")
+        self.txtarea.insert(END, f"{f'{text}'.center(num_dashes, '=')}\n")
+        self.txtarea.insert(END, f"{header_dashes}\n")
 
 #================================================================================================================================
     
     # header for the database display   
     def header_month(self):
         month = self.display_m.get()
-        category = self.display_c.get()
-        width = 44
-        self.txtarea.insert(END, f"{'=' * width}\n")
-        self.txtarea.insert(END, f"{f'| {month} Expense List |'.center(width, '=')}\n")
-        self.txtarea.insert(END, f"{'=' * width}\n")
+        width = self.txtarea.winfo_width()
+
+        display_width = self.txtarea.winfo_width()
+        text = f"| Expense List for {month} |"
+
+        num_dashes = display_width // self.divide
+        header_dashes = "=" * num_dashes
+
+        self.txtarea.insert(END, f"{header_dashes}\n")
+        self.txtarea.insert(END, f"{f'{text}'.center(num_dashes, '=')}\n")
+        self.txtarea.insert(END, f"{header_dashes}\n")
 
 #================================================================================================================================
     
@@ -655,11 +701,17 @@ class Expense:
     def header_ctgy(self):
         month = self.display_m.get()
         category = self.display_c.get()
-        width = 44
-        self.txtarea.insert(END, f"{'=' * width}\n")
-        self.txtarea.insert(END, f"{f'| {month} Expense List |'.center(width, '=')}\n")
-        self.txtarea.insert(END, f"{f' For {category} '.center(width, ' ')}\n")
-        self.txtarea.insert(END, f"{'=' * width}\n")
+
+        display_width = self.txtarea.winfo_width()
+        text = f"| Expense List for {month} by {category} |"
+
+        num_dashes = display_width // self.divide
+        header_dashes = "=" * num_dashes
+
+
+        self.txtarea.insert(END, f"{header_dashes}\n")
+        self.txtarea.insert(END, f"{f'{text}'.center(num_dashes, '=')}\n")
+        self.txtarea.insert(END, f"{header_dashes}\n")
     
 #================================================================================================================================
     
