@@ -6,6 +6,7 @@ import sqlite3
 from datetime import datetime
 from tkinter import messagebox
 import os
+# from tkcalendar import DateEntry
 
 # date = datetime.today()
 # year = date.strftime('%Y')
@@ -227,6 +228,10 @@ class Expense:
         date_year = tk.Entry(entries, textvariable = self.item_year, relief=SUNKEN, width=10)
         date_year.insert(0, self.date.strftime('%Y'))
         date_year.grid(row=1, column=2,sticky=W)
+
+        # Label(entries, text='Date (M/DD/YY) :').place(x=10, y=50)
+        # date = DateEntry(entries, date=datetime.datetime.now().date(), font=entry_font)
+        # date.place(x=160, y=50)
         
         self.item_date = f"{self.item_month.get()} {self.item_day.get()}, {self.item_year.get()}"
         
@@ -311,6 +316,7 @@ class Expense:
         display = LabelFrame(self.window, bd=10, relief=GROOVE)
         display.place(x=9, y=35, width=435, height=555)
         bill_title=Label(display, text="Your List of Expenses", font="arial 15 bold", bd=7, relief=GROOVE).pack(fill=X)
+
 
         scrol_y = Scrollbar(display, orient=VERTICAL) 
         self.txtarea = Text(display, yscrollcommand=scrol_y.set)
@@ -447,57 +453,38 @@ class Expense:
         self.txtarea.delete('1.0',END)
         self.header()
 
-        # Group expenses by month and date
-        expenses_by_month_and_date = {}
+        # Group expenses by date
+        expenses_by_date = {}
         for expense in expenses:
-
-            # date = expense[0] #if database has no primary key ID
             date = expense[1]
-            month = date.split(' ')[0]
+            if date not in expenses_by_date:
+                expenses_by_date[date] = []
+            expenses_by_date[date].append(expense)
 
-            if month not in expenses_by_month_and_date:
-                expenses_by_month_and_date[month] = {}
-            if date not in expenses_by_month_and_date[month]:
-                expenses_by_month_and_date[month][date] = []
-            expenses_by_month_and_date[month][date].append(expense)
+        # Sort dates in ascending order
+        sorted_dates = sorted(expenses_by_date.keys(), key=lambda x: datetime.strptime(x.strip(), '%B %d, %Y'))
 
-            #debug 
-            #get -> (date(m, dd, yyy), quantity, type, name, price)
-            # print(expense)
-            # print(date)
+        # Display expenses grouped by date
+        for date in sorted_dates:
+            expenses = expenses_by_date[date]
 
+            self.txtarea.tag_config("bold", font=("Courier", 13, "bold"))
+            self.txtarea.insert(END, f"{date}\n", "bold")
 
-        # Create a dictionary to convert month names to numbers
-        month_converter = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12}
+            for expense in expenses:
+                total_item_price = expense[2] * expense[5]
+                sum += total_item_price
 
+                self.txtarea.insert(END, f"[{expense[3]}]\n>{expense[4]}\t\t~{expense[2]}x ₱{expense[5]}\t\t\t= ₱{total_item_price}\n")
 
-        # Sort months and dates in ascending order
-        sorted_months = sorted(expenses_by_month_and_date.keys(), key=lambda x: month_converter[x])
-        for month in sorted_months:
-            sorted_dates = sorted(expenses_by_month_and_date[month].keys(), key=lambda x: datetime.strptime(x.strip(), '%B %d, %Y'))
+                self.txtarea.insert(END, f"\n")
+            self.txtarea.insert(END, f"\n")
 
-            # Display expenses grouped by month and date
-            for date in sorted_dates:
-                expenses = expenses_by_month_and_date[month][date]
-                self.txtarea.insert(END, f"{date} \n")
-                for expense in expenses:
-
-                    #variable declaration inside the loop
-                    total_item_price = expense[2] * expense[5]
-                    sum += total_item_price
-
-                    # display format of the outcome. (id[0], date[1], quantity[2], type[3], name[4], price[5])
-
-                    # default display format (no individual counting, merged or totaled counts)
-                    self.txtarea.insert(END, f"[{expense[3]}]\n~ {expense[4]}\t\t- {expense[2]}x ₱{expense[5]}\t\t\t= ₱{total_item_price}\n")
-
-                    # alternative display format (with individual counting) (grocery format)
-                    # self.txtarea.insert(END, f"[{expense[2]}] \t {expense[3]:<10}\t ₱{expense[4]}  x{expense[1]}\t\t\t₱{total_item_price}\t\t")
-                    
-                    self.txtarea.insert(END, f"\n")
-
-        self.txtarea.insert(END, f"\n{dashed_line}\n")
+        # Insert total monthly expenses
+        self.txtarea.insert(END, f"{dashed_line}\n")
         self.txtarea.insert(END, f"Total Monthly expenses \t\t\t\t\t= ₱{sum}\n")
+
+            
 
         # total_expenses -> (date, sum)
         
@@ -585,20 +572,28 @@ class Expense:
             # Display expenses grouped by date
             for date in sorted_dates:
                 expenses = expenses_by_date[date]
-                self.txtarea.insert(END, f"{date} \n")
+
+                self.txtarea.tag_config("bold", font=("Courier", 13, "bold"))
+                self.txtarea.insert(END, f"{date}\n", "bold")
+
+                
                 for expense in expenses:
                     total_item_price = expense[2] * expense[5]
                     sum += total_item_price
+
+                    print(expense)
+
                     #expense[0] - key ID
                     #expense[1] - date
                     #expense[2] - qty
                     #expense[3] - category
                     #expense[4] - item name
                     #expense[5] - price
-                    self.txtarea.insert(END, f"[{expense[3]}]\n~ {expense[4]}\t\t- {expense[2]}x ₱{expense[5]}\t\t\t= ₱{total_item_price}\n")
+                    self.txtarea.insert(END, f"[{expense[3]}]\n>{expense[4]}\t\t~{expense[2]}x ₱{expense[5]}\t\t\t= ₱{total_item_price}\n")
+                    self.txtarea.insert(END, f"\n")
 
                 self.txtarea.insert(END, f"\n")
-                self.txtarea.insert(END, f"\n{dashed_line}\n")
+            self.txtarea.insert(END, f"\n{dashed_line}\n")
 
             if day == "" or day == " ":
                 self.txtarea.insert(END, f"Total Expenses for {month}\t\t\t\t= ₱{sum}\n")
