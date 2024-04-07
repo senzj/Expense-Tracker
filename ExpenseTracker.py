@@ -70,6 +70,7 @@ class Expense:
     
     #dynanic widget and GUI display [in progress]
     def Dynamic_GUI_Widget(self):
+        
         pass
 
 
