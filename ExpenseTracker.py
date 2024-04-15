@@ -486,16 +486,16 @@ class Expense:
                     #expense[3] - category
                     #expense[4] - item name
                     #expense[5] - price
-                    self.txtarea.insert(END, f"[{expense[3]}]\n>{expense[4]}\t\t~{expense[2]}x ₱{expense[5]}\t\t\t= ₱{total_item_price}\n")
+                    self.txtarea.insert(END, f"[{expense[3]}]\n>{expense[4]}\t\t\t{expense[2]}x ₱{expense[5]}\t\t= ₱{total_item_price}\n")
                     self.txtarea.insert(END, f"\n")
 
                 self.txtarea.insert(END, f"\n")
             self.txtarea.insert(END, f"\n{dashed_line}\n")
 
             if day == "" or day == " ":
-                self.txtarea.insert(END, f"Total Expenses for {month}\t\t\t\t    = ₱{sum}\n")
+                self.txtarea.insert(END, f"Total Expenses as of {month}\t\t\t\t    = ₱{sum}\n")
             else:
-                self.txtarea.insert(END, f"Total Expenses for {month} {day}\t\t\t\t    = ₱{sum}\n")
+                self.txtarea.insert(END, f"Total Expenses as of {month} {day}\t\t\t\t    = ₱{sum}\n")
 
             #make a analysis like
             # this month you spent mostly on (item with the highest total_item_price)
