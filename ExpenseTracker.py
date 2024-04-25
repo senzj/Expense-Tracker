@@ -68,6 +68,7 @@ class Expense:
         self.days = [f"{i:02d}" for i in range(1, 32)]
         self.select_edate = datetime.today().strftime('%B %d, %Y')
         self.select_ddate = datetime.today().strftime('%B %d, %Y')
+        self.select_eedate = ""
         
         
         #database things
@@ -142,7 +143,7 @@ class Expense:
         display_c_label = tk.Label(display_chng, text="Category (Optional)", bg=dis_background).grid(row=1, column=0, sticky=E)
         display_c_entry = ttk.Combobox(display_chng, textvariable = self.display_c, width=17, values = self.catgs).grid(row=1, column=1, sticky=E)
         
-        display_m_label = tk.Label(display_chng, text="Month (Optional)", bg=dis_background).grid(row=2, column=0, sticky=E)
+        display_m_label = tk.Label(display_chng, text="Month", bg=dis_background).grid(row=2, column=0, sticky=E)
         display_m_entry = ttk.Combobox(display_chng, textvariable = self.display_m, width=17, values = self.months)
         display_m_entry.grid(row=2, column=1, sticky=E)
         display_m_entry.insert(0, self.date.strftime('%B'))
@@ -187,13 +188,18 @@ class Expense:
         edit_label = tk.Label(edit, text="Enter Expense by ID", bg=del_background).grid(row=0, column=0, sticky="e")
         edit_entry = tk.Entry(edit, textvariable=self.edit_ID).grid(row=0, column=1, sticky="w")
 
-        edit_label = tk.Label(edit, text="Enter Expense Year", bg=del_background).grid(row=1, column=0, sticky="e")
-        edit_entry = tk.Entry(edit, textvariable=self.edit_year).grid(row=1, column=1, sticky="w")
+        edit_label = tk.Label(edit, text="Enter Expense Year", bg=del_background).grid(row=0, column=2, sticky="e")
+        edit_entry = tk.Entry(edit, textvariable=self.edit_year, width=10).grid(row=0, column=3, sticky="w")
 
-        display_btn = tk.Button(edit, text="Search Expense", command=self.search_edit_expense, width=dbutton_width).grid(row=1,column=2, sticky=E, padx=5, pady=(0, 5))
+        display_btn = tk.Button(edit, text="Search Expense", command=self.search_edit_expense, width=dbutton_width).grid(row=0,column=5, sticky="e", padx=10)
 
         edit_label_name = tk.Label(edit, text="Expense", bg=del_background).grid(row=2, column=0, sticky="e", pady = 2)
         edit_entry_name = tk.Entry(edit, textvariable=self.edit_name).grid(row=2, column=1, sticky="w")
+
+        date_label = Label(edit, text="Date ", background=del_background).grid(row=1,column=0, pady=5, sticky="e")
+        self.select_eedate = DateEntry(edit)  # Use DateEntry instead of Entry
+        self.select_eedate.grid(row=1, column=1, pady=5, sticky="w")
+        self.select_eedate.delete(0, 'end')  # Clear the DateEntry when the program starts
 
         edit_label_cost = tk.Label(edit, text="Expense Cost", bg=del_background).grid(row=3, column=0, sticky="e", pady = 2)
         edit_entry_cost = tk.Entry(edit, textvariable=self.edit_cost).grid(row=3, column=1, sticky="w")
@@ -216,6 +222,10 @@ class Expense:
     def update_ddate(self, event):
         # Get the selected date and store it in self.select_ddate for delete
         self.select_ddate = event.widget.get_date().strftime('%B %d, %Y')
+
+    def update_eedate(self, event):
+        # Get the selected date and store it in self.select_ddate for delete
+        self.select_eedate = event.widget.get_date().strftime('%B %d, %Y')
 
 #================================================================================================================================
 
@@ -391,7 +401,7 @@ class Expense:
         self.txtarea.insert(END, f"Overall Total Expenses \t\t\t\t\t\t    = ₱{sum}\n")
 
         #analysis
-        self.compare_month(table_name)
+        # self.compare_month(table_name)
         self.compare_year(table_name)
 
         # total_expenses -> (date, sum)
@@ -511,11 +521,8 @@ class Expense:
 
             #analysis
             self.compare_month(table_name)
-            self.compare_year(table_name)
-
-            #make a analysis like
-            # this month you spent mostly on (item with the highest total_item_price)
-            # You spent (less/more) than previous (month/day) (march, if current month is april)
+            # self.compare_year(table_name)
+            # self.analysis(table_name)
 
         self.display_c.set("")
 
@@ -585,44 +592,33 @@ class Expense:
         date = self.select_ddate
         date_object = datetime.strptime(date, '%B %d, %Y')
 
-        #breaking the date into segments
+        # breaking the date into segments
         date_year = date_object.strftime('%Y')
         get_year = self.delete_year.get()
 
-        #retrieving ID and year
-        if self.edit_ID.get() == "" or self.edit_ID.get() == " ": 
+        # retrieving ID and year
+        if self.edit_ID.get() == "" or self.edit_ID.get() == " ":
             messagebox.showerror("Invalid Expense ID", "Please Enter a Valid Expense ID.")
             return
-        
-        #Strictly checking for year for validation
-        elif self.edit_year.get() == "" or self.edit_year.get() == " ": 
+
+        # Strictly checking for year for validation
+        elif self.edit_year.get() == "" or self.edit_year.get() == " ":
             messagebox.showerror("Invalid Year", "Please Enter a Valid Year.")
             return
         else:
             eID = self.edit_ID.get()
             table_name = self.edit_year.get()
-        
-        # Setting the current year if year is empty
-        # else:
-        #     if get_year == "" or get_year == " ":
-        #         table_name = date_year
-        #         self.edit_year.set(date_year)
-        #     else:
-        #         table_name = get_year
-        
 
-        #database declaration
+        # database declaration
         if self.conn is None:
             self.connect_to_db(table_name)
             print(f"Connecting to database {dbname}...")
 
-        #debugs
-        os.system('cls' if os.name == 'nt' else 'clear') # clear the terminal
+        # debugs
+        os.system('cls' if os.name == 'nt' else 'clear')  # clear the terminal
         print(f"\nSearching for Expense ID: {eID} in table \"{table_name}\"...\n")
 
-
-        
-        #retrieving data from the database with eID and table_name
+        # retrieving data from the database with eID and table_name
         self.cur.execute(f'SELECT * FROM "{table_name}" WHERE id = ?', (eID,))
         expense = self.cur.fetchone()
 
@@ -637,18 +633,22 @@ class Expense:
             price = expense[5]
             qty = expense[2]
             pay = expense[3]
+            date = expense[1]
 
             print(f"Expense ID: {eID}")
+            print(f"Date: {date}")
             print(f"Expense Name: {name}")
             print(f"Expense Price: {price}")
             print(f"Expense Quantity: {qty}")
             print(f"Payment Method: {pay}")
 
-            #displaying the data into the edit fields
+            # displaying the data into the edit fields
             self.edit_name.set(name)
             self.edit_cost.set(price)
             self.edit_qty.set(qty)
             self.edit_pay.set(pay)
+            self.select_eedate.delete(0, 'end')  # Clear the DateEntry before setting the date
+        self.select_eedate.insert(0, datetime.strptime(date, '%B %d, %Y').strftime('%m/%d/%Y'))
 
 #================================================================================================================================
 
@@ -657,10 +657,26 @@ class Expense:
         dbname = self.dbname
         eID = self.edit_ID.get()
 
+
+        date_str = self.select_eedate.get()
+        print(date_str)
+        date_obj = datetime.strptime(date_str, '%m/%d/%Y')
+
+        date = date_obj.strftime('%B %d, %Y')
         name = self.edit_name.get()
         price = self.edit_cost.get()
         qty = self.edit_qty.get()
         pay = self.edit_pay.get()
+
+        print(f"database: {dbname}")
+        print(f"table: {table_name}")
+        print(f"Expense ID: {eID}")
+        print(f"Date: {date}")
+        print(f"Expense Name: {name}")
+        print(f"Expense Price: {price}")
+        print(f"Expense Quantity: {qty}")
+        print(f"Payment Method: {pay}")
+        
 
         #connecting to database
         if self.conn is None:
@@ -681,18 +697,19 @@ class Expense:
             messagebox.showerror("Invalid Payment Method", "Please Enter a Valid Payment Method.")
         else:
             print(f"Editing Expense ID: {eID} in table \"{table_name}\"...\n")
-            self.cur.execute(f'UPDATE "{table_name}" SET name = ?, price = ?, quantity = ?, category = ? WHERE id = ?', (name, price, qty, pay, eID))
+            self.cur.execute(f'UPDATE "{table_name}" SET name = ?, price = ?, quantity = ?, category = ?, date = ? WHERE id = ?', (name, price, qty, pay, date, eID))
             self.conn.commit()
             messagebox.showinfo('Success!', f'Expense with Expense ID: {eID} has been Edited Successfully!')
             self.display_categorized_expenses()
 
-            self.edit_ID.set("")
-            self.edit_year.set("")
-            self.edit_name.set("")
-            self.edit_cost.set("")
-            self.edit_qty.set("")
-            self.edit_pay.set("")
-            print(f"Expense ID: {eID} has been Successfully Edited!")
+        self.edit_ID.set("")
+        self.edit_year.set("")
+        self.select_eedate.delete(0, 'end')
+        self.edit_name.set("")
+        self.edit_cost.set("")
+        self.edit_qty.set("")
+        self.edit_pay.set("")
+        print(f"Expense ID: {eID} has been Successfully Edited!")
 
 #================================================================================================================================
 
@@ -732,14 +749,29 @@ class Expense:
                 total += expense[1] * expense[2]
             month_sum[month] = total
 
-        #comparison logic
+        # comparison logic
         highest = max(month_sum, key=month_sum.get)
         lowest = min(month_sum, key=month_sum.get)
         print(f"Month with the Highest Expense is \"{highest}\" with the total of \"₱{month_sum[highest]}\".")
-        print(f"Month with the Lowest Expense is \"{lowest}\" with the total of \"₱{month_sum[lowest]}\".")
+        print(f"Month with the Lowest Expense is \"{lowest}\" with the total of \"₱{month_sum[lowest]}\".\n")
+
+        # statement for the comparison
+        # if month_sum[highest] == month_sum[lowest]:
+        #     print(f"You spent the same amount in {highest} as in the previous month, {lowest}.")
+        # elif month_sum[highest] > month_sum[lowest]:
+        #     print(f"You spent more in {highest} with ₱{month_sum[highest]} than in the month {lowest} with ₱{month_sum[lowest]}.")
+        # else:
+        #     print(f"You spent less in {highest} with ₱{month_sum[highest]} than in the month {lowest} with ₱{month_sum[lowest]}.")
 
         self.txtarea.insert(END, f"\nMost Expense Month: \"{highest}\" with the total of: \"₱{month_sum[highest]}\".\n")
         self.txtarea.insert(END, f"Least Expense Month: \"{lowest}\" with the total of: \"₱{month_sum[lowest]}\".\n")
+
+        #analysis of which item is the most expensive from that month
+        #sample output: "You spent mostly on (item) this (month)."
+
+        #make a analysis like
+        # this month you spent mostly on (item with the highest total_item_price)
+        # You spent (less/more) than previous (month/day) (march, if current month is april)
 
 #================================================================================================================================
 
@@ -877,21 +909,10 @@ class Expense:
 
 #================================================================================================================================
 
-    # def fields_reset(self):
-    #     self.item_qty.set("1")
-    #     self.item_name.set("")
-    #     self.item_prc.set("")
-
-    #     today_date = datetime.today()
-    #     self.resetdate.set_date(datetime.today())
-
-
-#================================================================================================================================
-
 # Declare so GUI wont close
 def main():
     window = Tk()  # Creating the Tkinter window instance here
-    window.geometry("930x640+200+80")
+    window.geometry("1180x640+200+80")
     app = Expense(window)
 
     window.grid_rowconfigure(0, weight=1)
