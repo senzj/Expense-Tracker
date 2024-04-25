@@ -7,21 +7,24 @@ from datetime import datetime
 from tkinter import messagebox
 import os
 from tkcalendar import DateEntry
+from pprint import pprint
+import calendar
     
 class Expense:
 
     #initialization
     def __init__(self, window):
 
+        icon = PhotoImage(file="icon.png")
+
         # Declarations
         self.window = window
-        self.window.title("Expenses List v3.0")
+        self.window.title("Expense Tracker v4")
+        self.window.iconphoto(False, icon)
+
 
         self.setup_grid()
-        self.Static_GUI_Widget()
-
-        #In progress..
-        # self.Dynamic_GUI_Widget()
+        self.GUI_Widget()
 
 #================================================================================================================================
     #defining variables 
@@ -31,6 +34,7 @@ class Expense:
 
         self.divide = 8
         self.date = datetime.today()
+
         self.item_date = StringVar()
         self.item_month = StringVar()
         self.item_day = StringVar()
@@ -39,17 +43,26 @@ class Expense:
         self.item_ctgy = tk.StringVar()
         self.item_name = tk.StringVar()
         self.item_prc = tk.DoubleVar()
+
         self.display_m = tk.StringVar()
         self.display_d = tk.StringVar()
         self.display_y = tk.StringVar()
         self.display_c = tk.StringVar()
+
         self.total_expenses = tk.DoubleVar()
         self.total_month_expenses = tk.DoubleVar()
         self.display_yr_entry = tk.StringVar()
-        self.delete_name = StringVar()
-        self.delete_m = StringVar()
-        self.delete_y = StringVar()
-        self.delete_d = StringVar()
+
+        self.delete_ID = StringVar()
+        self.delete_year = StringVar()
+
+        self.edit_name = StringVar()
+        self.edit_cost = DoubleVar()
+        self.edit_qty = IntVar()
+        self.edit_pay = StringVar()
+        self.edit_ID = StringVar()
+        self.edit_year = StringVar()
+
         self.catgs = [ 'Cash', 'GCash', 'Cheque', 'Others',]
         self.months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
         self.days = [f"{i:02d}" for i in range(1, 32)]
@@ -58,26 +71,17 @@ class Expense:
         
         
         #database things
-        self.table_name = "expenses"
-        # self.dbname = StringVar()
+        self.dbname = "expenses.db"
         self.conn = None
         self.cur = None
-        # self.connect_to_db(self.dbname)
 
         print("Program Ready.")
-
-#================================================================================================================================
-    
-    #dynanic widget and GUI display [in progress]
-    def Dynamic_GUI_Widget(self):
-        
-        pass
 
 
 #================================================================================================================================
     
     #dynanic widget and GUI display [done]
-    def Static_GUI_Widget(self):
+    def GUI_Widget(self):
 
         dbutton_width = 12
 
@@ -86,117 +90,122 @@ class Expense:
         dis_background = "sky blue"
         del_background = "sky blue"
 
-        add_frame_height = 200
-        dis_frame_height = 140
-        del_frame_height = 170
-        out_frame_height1 = 600
-        out_frame_height2 = 555
-
-        add_frame_width = 345
-        dis_frame_width = 345
-        del_frame_width = 345
-        out_frame_width1 = 450
-        out_frame_width2 = 435
-
-        # add_ = 
-        # dis_ = 
-        # del_ = 
-        # out_ =
-
-
         self.setup_var()
 
-#Adding Expense
-        entries = LabelFrame(self.window, bd=10, relief=GROOVE, text="Add Expense", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
-        entries.place(x=453, y=1, width=add_frame_width, height=add_frame_height)
+#display expense list
 
-        date_label = tk.Label(entries, text="Date ", bg=add_background).grid(row=1,column=0, pady=10, sticky="e")
-        
-        self.edate_cal = DateEntry(entries, width=12)  # Use self.window instead of entries
-        self.edate_cal.grid(row=1, column=1, pady=10, sticky="w")
-        self.edate_cal.set_date(datetime.today())  # Set date
-        self.edate_cal.bind("<<DateEntrySelected>>", self.update_edate)  # Bind event
+        display = LabelFrame(self.window, bd=5, relief=GROOVE)
+        display.grid(row=0, column=0, sticky="nsew", rowspan=5)  # Add sticky="nsew"
+        bill_title = Label(display, text="List of Expenses", font="arial 15 bold", bd=7, relief=GROOVE)
+        bill_title.pack(fill=X)
 
-        qnty_label = tk.Label(entries, text="Item Quantity", bg=add_background).grid(row=2, column=0, sticky="e")
-        qnty_entry = tk.Spinbox(entries, textvariable = self.item_qty,from_=1, to=9999, width=18, relief=SUNKEN).grid(row=2, column=1,pady=4)
-
-        ctgy_label = tk.Label(entries, text="Payment Method", bg=add_background).grid(row=3,column=0, sticky="e")
-        ctgy_entry = ttk.Combobox(entries, textvariable = self.item_ctgy, width=17, values=self.catgs)
-        ctgy_entry.grid(row=3,column=1,pady=4)
-        ctgy_entry.insert(0, "Cash")
-
-        item_label = tk.Label(entries, text="Item Name", bg=add_background).grid(row=4,column=0, sticky="e")
-        item_entry = tk.Entry(entries, textvariable = self.item_name, relief=SUNKEN).grid(row=4,column=1,pady=4)
-
-        prc_label = tk.Label(entries, text="Item Price", bg=add_background).grid(row=5,column=0, sticky="e")
-        prc_entry = tk.Entry(entries, textvariable = self.item_prc, relief=SUNKEN).grid(row=5, column=1)
-
-        #add more items
-        add_btn = tk.Button(entries, text="Add", command=self.add_item, width=11).grid(row=5,column=2, padx=13)
-
-
-#display list of items by month
-        display_chng = LabelFrame(self.window, bd=10, relief=GROOVE, text="Display Expense", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
-        display_chng.place(x=453, y=203, width=dis_frame_width, height=dis_frame_height)
-
-        display_c_label = tk.Label(display_chng, text="Category(Optional)", bg=dis_background).grid(row=1, column=1, sticky=W)
-        display_c_entry = ttk.Combobox(display_chng, textvariable = self.display_c, width=17, values = self.catgs).grid(row=1, column=2, sticky=E)
-        
-        display_m_label = tk.Label(display_chng, text="Month", bg=dis_background).grid(row=2, column=1, sticky=W)
-        display_m_entry = ttk.Combobox(display_chng, textvariable = self.display_m, width=17, values = self.months)
-        display_m_entry.grid(row=2, column=2, sticky=E)
-        display_m_entry.insert(0, self.date.strftime('%B'))
-        
-        display_d_label = tk.Label(display_chng, text="Day (Optional)", bg=dis_background).grid(row=3, column=1, sticky=W)
-        display_d_entry = ttk.Combobox(display_chng, textvariable = self.display_d, width=17, values = self.days)
-        display_d_entry.grid(row=3, column=2, sticky=E)
-        
-        display_yr_label = tk.Label(display_chng, text="Year", bg=dis_background).grid(row=4, column=1, sticky=W)
-        display_yr_entry = tk.Entry(display_chng, textvariable = self.display_y)
-        display_yr_entry.grid(row=4, column=2, sticky=E)
-        display_yr_entry.insert(0, self.date.strftime('%Y'))
-        
-        display_btn = tk.Button(display_chng, text="Show", command=self.display_specified, width=10).grid(row=3,column=3, sticky=E, padx=5)
-        display_btn = tk.Button(display_chng, text="Display All", command=self.display_item, width=10).grid(row=4,column=3, sticky=E, padx=5)
-        
-        
-#delete an item from database specified by name and date including month day year
-        delete = LabelFrame(self.window, bd=10, relief=GROOVE, text="Delete Expense", font=("times new roman", 20,"bold"), fg="black", bg="sky blue")
-        delete.place(x=453, y=345, width=del_frame_width, height=del_frame_height)
-
-        delete_item_label = tk.Label(delete, text="Enter an Expense", bg=del_background).grid(row=2, column=1, sticky="e")
-        delete_item_entry = tk.Entry(delete, textvariable=self.delete_name).grid(row=2, column=2, sticky="w", pady=5)
-        
-        date_label = tk.Label(delete, text="Date ", bg=del_background).grid(row=1,column=1, pady=5, sticky="e")
-        self.ddate_cal = DateEntry(delete, width=12)  # Use self.window instead of entries
-        self.ddate_cal.grid(row=1, column=2, pady=5, sticky="w")
-        self.ddate_cal.set_date(datetime.today())  # Set date
-        self.ddate_cal.bind("<<DateEntrySelected>>", self.update_ddate)  # Bind event
-        
-        
-        display_btn = tk.Button(delete, text="Delete Item", command=self.delete_item, width=dbutton_width).grid(row=1,column=3, sticky=E, padx=5, pady=5)
-        #clearing input field
-        clr_btn = tk.Button(delete, text="Clear Entries", command=self.clear_item, width=dbutton_width).grid(row=2,column=3, sticky=E, padx=5, pady=5)
-        #refresh
-        display_btn = tk.Button(delete, text="Refresh List", command=self.display_specified, width=dbutton_width).grid(row=3,column=3, sticky=E, padx=5, pady=5)
-    
-    
-#display items list area + by months and year
-        #frame
-        display = LabelFrame(self.window, bd=10, relief=GROOVE, text="Expenses List", font=("times new roman", 20,"bold"), fg="black", bg=background)
-        display.place(x=3, y=1, width=out_frame_width1, height=out_frame_height1)
-        
-        #display
-        display = LabelFrame(self.window, bd=10, relief=GROOVE)
-        display.place(x=9, y=35, width=out_frame_width2, height=out_frame_height2)
-        bill_title=Label(display, text="Your List of Expenses", font="arial 15 bold", bd=7, relief=GROOVE).pack(fill=X)
-
-
-        scrol_y = Scrollbar(display, orient=VERTICAL) 
+        scrol_y = Scrollbar(display, orient=VERTICAL)
         self.txtarea = Text(display, yscrollcommand=scrol_y.set)
         scrol_y.pack(side=RIGHT, fill=Y)
         scrol_y.config(command=self.txtarea.yview)
         self.txtarea.pack(fill=BOTH, expand=1)
+
+
+#Adding Expense
+        add_expense = LabelFrame(self.window, bd=10, relief=GROOVE, text="Add Expense", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
+        add_expense.grid(row=0, column=1, sticky="nsew")
+
+        date_label = tk.Label(add_expense, text="Date ", bg=add_background).grid(row=0,column=0, pady=5, sticky="e")
+        
+        self.edate_cal = DateEntry(add_expense, width=12)  # Use self.window instead of entries
+        self.edate_cal.grid(row=0, column=1, pady=10, sticky="w")
+        self.edate_cal.set_date(datetime.today())  # Set date
+        self.edate_cal.bind("<<DateEntrySelected>>", self.update_edate)  # Bind event
+
+        qnty_label = tk.Label(add_expense, text="Expense Quantity", bg=add_background).grid(row=2, column=0, sticky="e")
+        qnty_entry = tk.Spinbox(add_expense, textvariable = self.item_qty,from_=1, to=9999, width=18, relief=SUNKEN).grid(row=2, column=1,pady=4)
+
+        ctgy_label = tk.Label(add_expense, text="Payment Method", bg=add_background).grid(row=3,column=0, sticky="e")
+        ctgy_entry = ttk.Combobox(add_expense, textvariable = self.item_ctgy, width=17, values=self.catgs)
+        ctgy_entry.grid(row=3,column=1,pady=4)
+        ctgy_entry.insert(0, "Cash")
+
+        item_label = tk.Label(add_expense, text="Exepnse Name", bg=add_background).grid(row=4,column=0, sticky="e")
+        item_entry = tk.Entry(add_expense, textvariable = self.item_name, relief=SUNKEN).grid(row=4,column=1,pady=4)
+
+        prc_label = tk.Label(add_expense, text="Expense Cost", bg=add_background).grid(row=5,column=0, sticky="e")
+        prc_entry = tk.Entry(add_expense, textvariable = self.item_prc, relief=SUNKEN).grid(row=5, column=1)
+
+        #add more items
+        add_btn = tk.Button(add_expense, text="Add Expense", command=self.add_expense, width=11).grid(row=5,column=2, padx=13)
+
+
+#display list of items by month
+        display_chng = LabelFrame(self.window, bd=10, relief=GROOVE, text="Display Expense", font=("times new roman", 20, "bold"), fg="black", bg="sky blue")
+        display_chng.grid(row=1, column=1, sticky="nsew")
+
+        display_c_label = tk.Label(display_chng, text="Category (Optional)", bg=dis_background).grid(row=1, column=0, sticky=E)
+        display_c_entry = ttk.Combobox(display_chng, textvariable = self.display_c, width=17, values = self.catgs).grid(row=1, column=1, sticky=E)
+        
+        display_m_label = tk.Label(display_chng, text="Month (Optional)", bg=dis_background).grid(row=2, column=0, sticky=E)
+        display_m_entry = ttk.Combobox(display_chng, textvariable = self.display_m, width=17, values = self.months)
+        display_m_entry.grid(row=2, column=1, sticky=E)
+        display_m_entry.insert(0, self.date.strftime('%B'))
+        
+        display_d_label = tk.Label(display_chng, text="Day (Optional)", bg=dis_background).grid(row=3, column=0, sticky=E)
+        display_d_entry = ttk.Combobox(display_chng, textvariable = self.display_d, width=17, values = self.days)
+        display_d_entry.grid(row=3, column=1, sticky=E)
+        
+        display_yr_label = tk.Label(display_chng, text="Year", bg=dis_background).grid(row=4, column=0, sticky=E)
+        display_yr_entry = tk.Entry(display_chng, textvariable = self.display_y)
+        display_yr_entry.grid(row=4, column=1, sticky=E)
+        display_yr_entry.insert(0, self.date.strftime('%Y'))
+        
+        display_btn = tk.Button(display_chng, text="Get", command=self.display_categorized_expenses, width=10).grid(row=3,column=2, sticky=E, padx=5)
+        display_btn = tk.Button(display_chng, text="Get All", command=self.display_expenses, width=10).grid(row=4,column=2, sticky=E, padx=5)
+        
+        
+#delete an item from database specified by name and date including month day year
+        delete = LabelFrame(self.window, bd=10, relief=GROOVE, text="Delete Expense", font=("times new roman", 20,"bold"), fg="black", bg="sky blue")
+        delete.grid(row=4, column=1, sticky="nsew")
+
+        delete_expense_label = tk.Label(delete, text="Enter an Expense by ID ", bg=del_background).grid(row=0, column=0, sticky="e")
+        delete_expense_entry = tk.Entry(delete, textvariable=self.delete_ID).grid(row=0, column=1, sticky="w")
+
+        delete_expense_label = tk.Label(delete, text="Enter Expense Year ", bg=del_background).grid(row=1, column=0, sticky="e")
+        delete_expense_entry = tk.Entry(delete, textvariable=self.delete_year).grid(row=1, column=1, sticky="w")
+        
+        # date_label = tk.Label(delete, text="Date ", bg=del_background).grid(row=1,column=1, pady=5, sticky="e")
+        # self.ddate_cal = DateEntry(delete, width=12)  # Use self.window instead of entries
+        # self.ddate_cal.grid(row=1, column=2, pady=5, sticky="w")
+        # self.ddate_cal.set_date(datetime.today())  # Set date
+        # self.ddate_cal.bind("<<DateEntrySelected>>", self.update_ddate)  # Bind event
+        
+        
+        display_btn = tk.Button(delete, text="Delete Item", command=self.delete_expense, width=dbutton_width).grid(row=1,column=2, sticky=E, padx=5, pady=5)
+
+
+#edit items from the database by entering the expense ID
+        edit = LabelFrame(self.window, bd=10, relief=GROOVE, text="Edit Expense", font=("times new roman", 20,"bold"), fg="black", bg="sky blue")
+        edit.grid(row=3, column=1, sticky="nsew")
+
+        edit_label = tk.Label(edit, text="Enter Expense by ID", bg=del_background).grid(row=0, column=0, sticky="e")
+        edit_entry = tk.Entry(edit, textvariable=self.edit_ID).grid(row=0, column=1, sticky="w")
+
+        edit_label = tk.Label(edit, text="Enter Expense Year", bg=del_background).grid(row=1, column=0, sticky="e")
+        edit_entry = tk.Entry(edit, textvariable=self.edit_year).grid(row=1, column=1, sticky="w")
+
+        display_btn = tk.Button(edit, text="Search Expense", command=self.search_edit_expense, width=dbutton_width).grid(row=1,column=2, sticky=E, padx=5, pady=(0, 5))
+
+        edit_label_name = tk.Label(edit, text="Expense", bg=del_background).grid(row=2, column=0, sticky="e", pady = 2)
+        edit_entry_name = tk.Entry(edit, textvariable=self.edit_name).grid(row=2, column=1, sticky="w")
+
+        edit_label_cost = tk.Label(edit, text="Expense Cost", bg=del_background).grid(row=3, column=0, sticky="e", pady = 2)
+        edit_entry_cost = tk.Entry(edit, textvariable=self.edit_cost).grid(row=3, column=1, sticky="w")
+
+        edit_label_qnty = tk.Label(edit, text="Expense Quantity", bg=del_background).grid(row=4, column=0, sticky="e", pady = 2)
+        edit_entry_qnty = tk.Spinbox(edit, textvariable = self.edit_qty,from_=0, to=9999, width=18, relief=SUNKEN).grid(row=4, column=1,pady=4)
+
+        edit_label_pay = tk.Label(edit, text="Payment Method", bg=del_background).grid(row=5, column=0, sticky="e", pady = 2)
+        edit_entry_pay = ttk.Combobox(edit, textvariable = self.edit_pay, width=17, values=self.catgs).grid(row=5,column=1,pady=4)
+
+        confirm_edit_btn = tk.Button(edit, text="Edit Expense", command=self.edit_expense, width=dbutton_width).grid(row=5, column=2, sticky=E, padx=5)
+
 
 #================================================================================================================================
     
@@ -211,48 +220,44 @@ class Expense:
 #================================================================================================================================
 
     # creating or checking for existing db in the directory by year [done]
-    def connect_to_db(self, dbname):
+    def connect_to_db(self, tablename):
         if self.conn:
             self.conn.close()  # close previous connection if it exists
 
-        db_name = f"{dbname}.db"
+        db_name = self.dbname
+        table_name = tablename
 
         # Check if the database file exists before connecting
         if not os.path.exists(db_name):
-            print(f"The Database named {db_name} does not exist..")
-            print(f"Creating Database named {db_name} now...")
-            print(f"Creating table named {self.table_name}...")
-
-            self.conn = sqlite3.connect(db_name)
-            self.cur = self.conn.cursor()
-
-            # Create the table
-            
-            query = f'''CREATE TABLE IF NOT EXISTS "{self.table_name}" (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    date TEXT,
-                    quantity INTEGER,
-                    category TEXT,
-                    name TEXT,
-                    price REAL
-                    )'''
-
-            # Execute the query
-            self.cur.execute(query)
-            
-            print(f"Database {db_name} and Table {self.table_name} Created Successfully!")
-
-        else:
-            print(f"Database {db_name} already exist")
-            print(f"The table {self.table_name} already exists.")
+            print(f"The Database named \"{db_name}\" doesn't exist...\n")
+            print(f"Creating Database \"{db_name}\"...\n")
 
         self.conn = sqlite3.connect(db_name)
         self.cur = self.conn.cursor()
 
+        # Create the table if not exists
+        query = f'''CREATE TABLE IF NOT EXISTS "{table_name}" (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT,
+                quantity INTEGER,
+                category TEXT,
+                name TEXT,
+                price REAL
+                )'''
+
+        # Execute the query
+        print(f"Attempting to create table named \"{table_name}\"...\n")
+        self.cur.execute(query)
+
+        if not os.path.exists(db_name):
+            print(f"Database \"{db_name}.db\" and Table \"{table_name}\" Created Successfully!")
+        else:
+            print(f"Database \"{db_name}\" and Table \"{table_name}\" already exist.")
+
 #================================================================================================================================
     
     # adding item into the (year).db database. [done]
-    def add_item(self):
+    def add_expense(self):
         date = self.select_edate
         date_object = datetime.strptime(date, '%B %d, %Y')
 
@@ -266,13 +271,18 @@ class Expense:
         ctgy = self.item_ctgy.get()
         name = self.item_name.get()
         prc = self.item_prc.get()
-        table_name = self.table_name
+        dbname = self.dbname
+        table_name = date_year
 
         if self.conn is None:
-            self.connect_to_db(date_year)
-            print(f"Connecting to database {date_year}...")
+            self.connect_to_db(table_name)
+            print(f"Connecting to database {dbname}...")
         else:
-            print(f"Already Connected to {date_year}.db")
+            print(f"Already Connected to {dbname}.db")
+
+        # print(f"database: {dbname}")
+        # print(f"table: {table_name}")
+
         
         if num == 0 or num < 0:
             messagebox.showerror("Invalid Quantity", "Please Enter a Valid Item Quantity.")
@@ -286,10 +296,10 @@ class Expense:
             messagebox.showerror("Invalid Price", "Please Enter a Valid Item Price.")
         else:
             #db data transfer debugging
-            print("\nAdding item details...")
+            print("\nAdding the following expense details.")
             print(f"Date: {date}")
+            print(f"Expense: {name}")
             print(f"Quantity: {num}")
-            print(f"Item name: {name}")
             print(f"Price: {prc}")
             print(f"Payment Method: {ctgy}\n")
             
@@ -298,7 +308,7 @@ class Expense:
             self.conn.commit()
             messagebox.showinfo('Success', 'Item added successfully!')
             print(f"Items Added Succesfully!")
-            self.display_specified()
+            self.display_categorized_expenses()
             
         print(f"Process Completed Succesfully!")
 
@@ -312,31 +322,35 @@ class Expense:
 #================================================================================================================================
 
     # displaying all items from the current year from (year).db [done]
-    def display_item(self):
+    def display_expenses(self):
 
         #variable declation
         sum = 0
-        date_year = f"{self.item_year.get()}"
 
         display_width = self.txtarea.winfo_width()
         num_dashes = display_width // self.divide
         dashed_line = "-" * num_dashes
+        dbname = self.dbname
+        table_name = self.display_y.get()
+
+        os.system('cls' if os.name == 'nt' else 'clear') # clear the terminal
+        print(f"Displaying all Expenses from the year {table_name}...\n")
         # print(display_width)
         # print(num_dashes)
         # print(dashed_line)
+        print(f"database: {dbname}")
+        print(f"table: {table_name}")
 
 
         #database actions
         if self.conn is None:
-            self.connect_to_db(date_year)
-            print(f"Connecting to database {date_year}...")
-        else:
-            print(f"Already Connected to {date_year}.db")
+            self.connect_to_db(table_name)
+            print(f"Connecting to database {dbname}...")
 
-        self.cur.execute("""SELECT * FROM expenses""")
+        self.cur.execute(f'SELECT * FROM "{table_name}"')
         expenses = self.cur.fetchall()
 
-        self.cur.execute("""SELECT date, SUM(price) FROM expenses""")
+        self.cur.execute(f'SELECT date, SUM(price) FROM "{table_name}"')
         total_expenses = self.cur.fetchone()
         
 
@@ -363,23 +377,22 @@ class Expense:
             self.txtarea.insert(END, f"{date}\n", "bold")
 
             for expense in expenses:
+                # print(expense)
                 total_item_price = expense[2] * expense[5]
                 sum += total_item_price
 
-                self.txtarea.insert(END, f"[{expense[3]}]\n>{expense[4]}\t\t\t~{expense[2]}x ₱{expense[5]}\t\t= ₱{total_item_price}\n")
+                self.txtarea.insert(END, f"[ID: {expense[0]}][Type: {expense[3]}]\n>{expense[4]}\t\t\t~{expense[2]}x ₱{expense[5]}\t\t\t    = ₱{total_item_price}\n")
 
                 self.txtarea.insert(END, f"\n")
             self.txtarea.insert(END, f"\n")
 
         # Insert total monthly expenses
         self.txtarea.insert(END, f"{dashed_line}\n")
-        self.txtarea.insert(END, f"Overall Total Expenses \t\t\t\t\t= ₱{sum}\n")
+        self.txtarea.insert(END, f"Overall Total Expenses \t\t\t\t\t\t    = ₱{sum}\n")
 
-        #make a analysis like
-        # this month you spent mostly on (item with the highest total_item_price)
-        # You spent (less/more) than previous month (march, if current month is april)
-
-            
+        #analysis
+        self.compare_month(table_name)
+        self.compare_year(table_name)
 
         # total_expenses -> (date, sum)
         
@@ -389,8 +402,7 @@ class Expense:
 #================================================================================================================================
 
     # displaying all items with specified month, day (optional), along with year to know which database to open [done]
-    def display_specified(self):
-
+    def display_categorized_expenses(self):
         #variable declaration
         sum = 0
         month = self.display_m.get()
@@ -401,59 +413,61 @@ class Expense:
         display_width = self.txtarea.winfo_width()
         num_dashes = display_width // self.divide
         dashed_line = "-" * num_dashes
-        # print(display_width)
-        # print(num_dashes)
-        # print(dashed_line)
 
+        db_name = self.dbname
+        table_name = year
+
+        os.system('cls' if os.name == 'nt' else 'clear') # clear the terminal
+        print(f"Displaying Expenses from the year {year}...\n")
+        print(f"\n\ndatabase: {db_name}")
+        print(f"table: {table_name}")
 
         #database declaration
-        date_year = f"{year}"
         if self.conn is None:
-            self.connect_to_db(date_year)
-            print(f"Connecting to database {date_year}...")
-        else:
-            print(f"Already Connected to {date_year}.db")
-        
+            self.connect_to_db(table_name)
+            print(f"Connecting to database {db_name}...")
+
 
         #display prep
         self.txtarea.delete('1.0', END)
        
-        #logic starts
+       #logic starts
         if month == "" or month == " ":
-            messagebox.showerror("Invalid Month", "Please Enter a Valid Month (E.G. June, July).")
+            messagebox.showerror("Invalid Month", "Please Enter a Valid Month.")
         elif year == "" or year == " ":
-            messagebox.showerror("Invalid Year", "Please Enter a Valid Year (E.G. 2020).")
+            messagebox.showerror("Invalid Year", "Please Enter a Valid Year.")
         else:
             if day == "" or day == " ":
                 if category == "" or category == " ":
                     self.header_month()
-                    self.cur.execute("""SELECT * FROM expenses WHERE date LIKE ?""", (f'%{month}%, {year}',))
+                    self.cur.execute(f'SELECT * FROM "{table_name}" WHERE date LIKE ?', (f'%{month}%, {year}',))
                     expenses = self.cur.fetchall()
 
-                    self.cur.execute("""SELECT date, SUM(price) FROM expenses WHERE date LIKE ?""", (f'%{month}%, {year}',))
+                    self.cur.execute(f'SELECT date, SUM(price) FROM "{table_name}" WHERE date LIKE ?', (f'%{month}%, {year}',))
                     self.total_expenses = self.cur.fetchone()
                 else:
                     self.header_ctgy()
-                    self.cur.execute("""SELECT * FROM expenses WHERE date LIKE ? AND category = ?""", (f'%{month}%, {year}', category))
+                    self.cur.execute(f'SELECT * FROM "{table_name}" WHERE date LIKE ? AND category = ?', (f'%{month}%, {year}', category))
                     expenses = self.cur.fetchall()
 
-                    self.cur.execute("""SELECT date, SUM(price) FROM expenses WHERE date LIKE ? AND category = ?""", (f'%{month}%, {year}', category))
+                    self.cur.execute(f'SELECT date, SUM(price) FROM "{table_name}" WHERE date LIKE ? AND category = ?', (f'%{month}%, {year}', category))
                     self.total_expenses = self.cur.fetchone()
             else:
                 if category == "" or category == " ":
                     self.header_month()
-                    self.cur.execute("""SELECT * FROM expenses WHERE date LIKE ?""", (f'%{month} {day}, {year}',))
+                    self.cur.execute(f'SELECT * FROM "{table_name}" WHERE date LIKE ?', (f'%{month} {day}, {year}',))
                     expenses = self.cur.fetchall()
 
-                    self.cur.execute("""SELECT date, SUM(price) FROM expenses WHERE date LIKE ?""", (f'%{month} {day}, {year}',))
+                    self.cur.execute(f'SELECT date, SUM(price) FROM "{table_name}" WHERE date LIKE ?', (f'%{month} {day}, {year}',))
                     self.total_expenses = self.cur.fetchone()
                 else:
                     self.header_ctgy()
-                    self.cur.execute("""SELECT * FROM expenses WHERE date LIKE ? AND category = ?""", (f'%{month} {day}, {year}', category))
+                    self.cur.execute(f'SELECT * FROM "{table_name}" WHERE date LIKE ? AND category = ?', (f'%{month} {day}, {year}', category))
                     expenses = self.cur.fetchall()
 
-                    self.cur.execute("""SELECT date, SUM(price) FROM expenses WHERE date LIKE ? AND category = ?""", (f'%{month} {day}, {year}', category))
+                    self.cur.execute(f'SELECT date, SUM(price) FROM "{table_name}" WHERE date LIKE ? AND category = ?', (f'%{month} {day}, {year}', category))
                     self.total_expenses = self.cur.fetchone()
+
 
             # Group expenses by date
             expenses_by_date = {}
@@ -478,24 +492,26 @@ class Expense:
                     total_item_price = expense[2] * expense[5]
                     sum += total_item_price
 
-                    # print(expense)
-
-                    #expense[0] - key ID
+                    #expense[0] - expense ID
                     #expense[1] - date
                     #expense[2] - qty
                     #expense[3] - category
                     #expense[4] - item name
                     #expense[5] - price
-                    self.txtarea.insert(END, f"[{expense[3]}]\n>{expense[4]}\t\t\t{expense[2]}x ₱{expense[5]}\t\t= ₱{total_item_price}\n")
+                    self.txtarea.insert(END, f"[ID: {expense[0]}][Type: {expense[3]}]\n>{expense[4]}\t\t\t~{expense[2]}x ₱{expense[5]}\t\t\t    = ₱{total_item_price}\n")
                     self.txtarea.insert(END, f"\n")
 
                 self.txtarea.insert(END, f"\n")
             self.txtarea.insert(END, f"\n{dashed_line}\n")
 
             if day == "" or day == " ":
-                self.txtarea.insert(END, f"Total Expenses as of {month}\t\t\t\t    = ₱{sum}\n")
+                self.txtarea.insert(END, f"Total Expenses as of {month}\t\t\t\t\t\t    = ₱{sum}\n")
             else:
-                self.txtarea.insert(END, f"Total Expenses as of {month} {day}\t\t\t\t    = ₱{sum}\n")
+                self.txtarea.insert(END, f"Total Expenses as of {month} {day}\t\t\t\t\t\t    = ₱{sum}\n")
+
+            #analysis
+            self.compare_month(table_name)
+            self.compare_year(table_name)
 
             #make a analysis like
             # this month you spent mostly on (item with the highest total_item_price)
@@ -512,48 +528,275 @@ class Expense:
 #================================================================================================================================
 
     # deleting item from the selected year (year).db to delete the specified item with specified date. [done]
-    def delete_item(self):
+    def delete_expense(self):
 
         date = self.select_ddate
         date_object = datetime.strptime(date, '%B %d, %Y')
 
         #breaking the date into segments
         date_year = date_object.strftime('%Y')
-        date_month = date_object.strftime('%B')
-        date_day = date_object.strftime('%d')
+        get_year = self.delete_year.get()
 
-        name = self.delete_name.get()
-        today_delete = datetime.today()
-        ddate = f"{date_month} {date_day}, {date_year}"
+        eID = self.delete_ID.get()
+        db_name = self.dbname
+
+        #Strictly checking for year for validation
+        if self.delete_year.get() == "" or self.delete_year.get() == " ": 
+            messagebox.showerror("Invalid Year", "Please Enter a Valid Year.")
+            return
+        else:
+            table_name = self.delete_year.get()
+
+        # Setting the current year if year is empty
+        # if get_year == "" or get_year == " ":
+        #     table_name = date_year
+        #     self.delete_year.set(date_year)
+        # else:
+        #     table_name = get_year
 
         if self.conn is None:
-            self.connect_to_db(date_year)
-            print(f"Connecting to database {date_year}...")
-        else:
-            print(f"Already Connected to {date_year}.db")
+            self.connect_to_db(db_name)
+            print(f"Connecting to database {db_name}")
 
-        if name == "" or name == " ":
-            alertm = messagebox.showerror("Invalid Item", "Kindly Enter a Valid Item.")
-        elif date_month == "" or date_month == " ":
-            alertm = messagebox.showerror("Invalid Month", "Kindly Enter a Valid Month.")
-        elif date_day == "" or date_day == " ":
-            alertd = messagebox.showerror("Invalid Date","Kindly Enter a Valid Day.")
-        elif date_year == "" or date_year == " ":
-            alerty = messagebox.showerror("Invalid Year", "Kindly Enter a Valid Year.")
+        if eID == "" or eID == " ":
+            messagebox.showerror("Invalid Expense ID", "Please Enter a Valid Expense ID.")
         else:
-            q = messagebox.askyesno("Deleting an Item...", "Do you want to Delete This Item?")
+            #q = messagebox.askyesno('Deleting Expense', f'Are you sure do you want to DELETE this Expense Item? (This action cannot be undone)\n details:\nExpense ID: {eID}\nDate: {date}\nQuantity: {qty}\nCategory: {pay}\nItem: {name}\nPrice: {price}')
+            q = messagebox.askyesno('Deleting Expense', f'\nAre you sure do you want to DELETE this Expense Item with the following details.\n(This action cannot be undone)\nExpense ID: {eID}\nDate: {date}\n')
             if q > 0:
-                self.cur.execute('DELETE FROM expenses WHERE name = ? AND date = ?', (name, date))
+                self.cur.execute(f'DELETE FROM "{table_name}" WHERE id = ?', (eID))
                 self.conn.commit()
-                messagebox.showinfo('Success', 'Item deleted successfully!')
-                self.delete_name.set("")
-                self.delete_d.set(today_delete.strftime('%d'))
-                self.delete_m.set(today_delete.strftime('%B'))
-                self.delete_y.set(today_delete.year)
-                self.display_specified()
+                messagebox.showinfo('Success!', 'Expense has been Deleted Successfully!')
+                self.delete_ID.set("")
+                self.delete_year.set("")
+                self.display_categorized_expenses()
 
-                print(f"\nItem {name}, from {date}, Successfully Removed.")
-                # print(f"\nItem {name}, from {date}, with the ID of  Successfully Removed.")
+
+                os.system('cls' if os.name == 'nt' else 'clear') # clear the terminal
+                print(f"\nExpense \"{eID}\" from {date} has been Successfully Deleted!")
+
+#================================================================================================================================
+
+    def search_edit_expense(self):
+        table_name = self.edit_year.get()
+        dbname = self.dbname
+        eID = self.edit_ID.get()
+
+        date = self.select_ddate
+        date_object = datetime.strptime(date, '%B %d, %Y')
+
+        #breaking the date into segments
+        date_year = date_object.strftime('%Y')
+        get_year = self.delete_year.get()
+
+        #retrieving ID and year
+        if self.edit_ID.get() == "" or self.edit_ID.get() == " ": 
+            messagebox.showerror("Invalid Expense ID", "Please Enter a Valid Expense ID.")
+            return
+        
+        #Strictly checking for year for validation
+        elif self.edit_year.get() == "" or self.edit_year.get() == " ": 
+            messagebox.showerror("Invalid Year", "Please Enter a Valid Year.")
+            return
+        else:
+            eID = self.edit_ID.get()
+            table_name = self.edit_year.get()
+        
+        # Setting the current year if year is empty
+        # else:
+        #     if get_year == "" or get_year == " ":
+        #         table_name = date_year
+        #         self.edit_year.set(date_year)
+        #     else:
+        #         table_name = get_year
+        
+
+        #database declaration
+        if self.conn is None:
+            self.connect_to_db(table_name)
+            print(f"Connecting to database {dbname}...")
+
+        #debugs
+        os.system('cls' if os.name == 'nt' else 'clear') # clear the terminal
+        print(f"\nSearching for Expense ID: {eID} in table \"{table_name}\"...\n")
+
+
+        
+        #retrieving data from the database with eID and table_name
+        self.cur.execute(f'SELECT * FROM "{table_name}" WHERE id = ?', (eID,))
+        expense = self.cur.fetchone()
+
+        # if eID not in table_name: then return error message "Expense ID not found in the database."
+        if expense is None:
+            print(f"Expense ID: {eID} not found in the the table \"{table_name}\".")
+            messagebox.showerror("Expense ID not found", f"Expense ID not found in the database with the year {table_name}.")
+            return
+        else:
+            print(f"Search Success! Expense ID: {eID} found in the table \"{table_name}\".\n")
+            name = expense[4]
+            price = expense[5]
+            qty = expense[2]
+            pay = expense[3]
+
+            print(f"Expense ID: {eID}")
+            print(f"Expense Name: {name}")
+            print(f"Expense Price: {price}")
+            print(f"Expense Quantity: {qty}")
+            print(f"Payment Method: {pay}")
+
+            #displaying the data into the edit fields
+            self.edit_name.set(name)
+            self.edit_cost.set(price)
+            self.edit_qty.set(qty)
+            self.edit_pay.set(pay)
+
+#================================================================================================================================
+
+    def edit_expense(self):
+        table_name = self.edit_year.get()
+        dbname = self.dbname
+        eID = self.edit_ID.get()
+
+        name = self.edit_name.get()
+        price = self.edit_cost.get()
+        qty = self.edit_qty.get()
+        pay = self.edit_pay.get()
+
+        #connecting to database
+        if self.conn is None:
+            self.connect_to_db(table_name)
+            print(f"Connecting to database {dbname}...")
+        else:
+            print(f"Already Connected to {dbname}.db")
+
+        os.system('cls' if os.name == 'nt' else 'clear') # clear the terminal
+        #Editing/updating the data from the database
+        if name == "" or name == " ":
+            messagebox.showerror("Invalid Expense Name", "Please Enter a Valid Expense Name.")
+        elif price == 0 or price < 0 or price == "" or price == " ":
+            messagebox.showerror("Invalid Expense Price", "Please Enter a Valid Expense Price.")
+        elif qty == 0 or qty < 0 or qty == "" or qty == " ":
+            messagebox.showerror("Invalid Expense Quantity", "Please Enter a Valid Expense Quantity.")
+        elif pay == "" or pay == " ":
+            messagebox.showerror("Invalid Payment Method", "Please Enter a Valid Payment Method.")
+        else:
+            print(f"Editing Expense ID: {eID} in table \"{table_name}\"...\n")
+            self.cur.execute(f'UPDATE "{table_name}" SET name = ?, price = ?, quantity = ?, category = ? WHERE id = ?', (name, price, qty, pay, eID))
+            self.conn.commit()
+            messagebox.showinfo('Success!', f'Expense with Expense ID: {eID} has been Edited Successfully!')
+            self.display_categorized_expenses()
+
+            self.edit_ID.set("")
+            self.edit_year.set("")
+            self.edit_name.set("")
+            self.edit_cost.set("")
+            self.edit_qty.set("")
+            self.edit_pay.set("")
+            print(f"Expense ID: {eID} has been Successfully Edited!")
+
+#================================================================================================================================
+
+    def compare_month(self, table_name):
+        dbname = self.dbname
+
+        os.system('cls' if os.name == 'nt' else 'clear') # clear the terminal
+        print(f"database: {dbname}")
+        print(f"table: {table_name}")
+
+        #Database declaration
+        if self.conn is None:
+            self.connect_to_db(table_name)
+            print(f"Connecting to database {dbname}...")
+
+        #database actions
+        self.cur.execute(f'SELECT date, quantity, price FROM "{table_name}" ')
+        montly_expense = self.cur.fetchall()
+
+        # Sort dates in ascending order
+        sort_month = sorted(montly_expense, key=lambda x: datetime.strptime(x[0].strip(), '%B %d, %Y'))
+
+        #grouping the expenses by month
+        expenses_by_month = {}
+        for expense in sort_month:
+            date = expense[0]
+            month = date.split(" ")[0]
+            if month not in expenses_by_month:
+                expenses_by_month[month] = []
+            expenses_by_month[month].append(expense)
+
+        # sum of monthly of expenses
+        month_sum = {}
+        for month, expenses in expenses_by_month.items():
+            total = 0
+            for expense in expenses:
+                total += expense[1] * expense[2]
+            month_sum[month] = total
+
+        #comparison logic
+        highest = max(month_sum, key=month_sum.get)
+        lowest = min(month_sum, key=month_sum.get)
+        print(f"Month with the Highest Expense is \"{highest}\" with the total of \"₱{month_sum[highest]}\".")
+        print(f"Month with the Lowest Expense is \"{lowest}\" with the total of \"₱{month_sum[lowest]}\".")
+
+        self.txtarea.insert(END, f"\nMost Expense Month: \"{highest}\" with the total of: \"₱{month_sum[highest]}\".\n")
+        self.txtarea.insert(END, f"Least Expense Month: \"{lowest}\" with the total of: \"₱{month_sum[lowest]}\".\n")
+
+#================================================================================================================================
+
+    def compare_year(self, table_name):
+        dbname = self.dbname
+
+        # os.system('cls' if os.name == 'nt' else 'clear') # clear the terminal
+
+        # database declaration
+        if self.conn is None:
+            self.connect_to_db()
+            print(f"Connecting to database {dbname}...")
+
+        # Get all non-system table names
+        self.cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
+        tables = self.cur.fetchall()
+
+        yearly_expense = []
+        for table in tables:
+            # Check if the table has the 'date', 'quantity', and 'price' columns
+            self.cur.execute(f"PRAGMA table_info('{table[0]}')")
+            columns = [column[1] for column in self.cur.fetchall()]
+            if all(column in columns for column in ['date', 'quantity', 'price']):
+                #database actions
+                self.cur.execute(f'SELECT date, quantity, price FROM "{table[0]}"')
+                yearly_expense += self.cur.fetchall()
+            else:
+                print(f"Table '{table[0]}' does not have 'date', 'quantity', or 'price' column.")
+
+        # Sort year in ascending order
+        sort_year = sorted(yearly_expense, key=lambda x: datetime.strptime(x[0].strip(), '%B %d, %Y'))
+
+        #grouping the expenses by year
+        expenses_by_year = {}
+        for expense in sort_year:
+            date = expense[0]
+            year = date.split(" ")[2]
+            if year not in expenses_by_year:
+                expenses_by_year[year] = []
+            expenses_by_year[year].append(expense)
+
+        # sum of yearly of expenses
+        year_sum = {}
+        for year, expenses in expenses_by_year.items():
+            total = 0
+            for expense in expenses:
+                total += expense[1] * expense[2]
+            year_sum[year] = total
+
+        #comparison logic
+        highest = max(year_sum, key=year_sum.get)
+        lowest = min(year_sum, key=year_sum.get)
+        print(f"\nYear with the Highest Expense is \"{highest}\" with the total of \"₱{year_sum[highest]}\".")
+        print(f"Year with the Lowest Expense is \"{lowest}\" with the total of \"₱{year_sum[lowest]}\".\n")
+
+        self.txtarea.insert(END, f"\nMost Expense Year: \"{highest}\" with the Total of: \"₱{year_sum[highest]}\".\n")
+        self.txtarea.insert(END, f"Least Expense Year: \"{lowest}\" with the Total of: \"₱{year_sum[lowest]}\".\n\n")
 
 #================================================================================================================================
     
@@ -647,12 +890,14 @@ class Expense:
 
 # Declare so GUI wont close
 def main():
-    # expense = Expense(window)
-    # window.mainloop()
-
     window = Tk()  # Creating the Tkinter window instance here
-    window.geometry("800x600+200+80")
+    window.geometry("930x640+200+80")
     app = Expense(window)
+
+    window.grid_rowconfigure(0, weight=1)
+    window.grid_columnconfigure(0, weight=1)
+
+    #window.resizable(True, True)
     window.mainloop()
 
 #================================================================================================================================
