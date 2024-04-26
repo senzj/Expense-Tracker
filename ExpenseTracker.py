@@ -42,7 +42,7 @@ class Expense:
         self.item_qty = tk.IntVar()
         self.item_ctgy = tk.StringVar()
         self.item_name = tk.StringVar()
-        self.item_prc = tk.DoubleVar()
+        self.item_prc = tk.StringVar()
 
         self.display_m = tk.StringVar()
         self.display_d = tk.StringVar()
@@ -57,7 +57,7 @@ class Expense:
         self.delete_year = StringVar()
 
         self.edit_name = StringVar()
-        self.edit_cost = DoubleVar()
+        self.edit_cost = StringVar()
         self.edit_qty = IntVar()
         self.edit_pay = StringVar()
         self.edit_ID = StringVar()
@@ -270,6 +270,7 @@ class Expense:
     def add_expense(self):
         date = self.select_edate
         date_object = datetime.strptime(date, '%B %d, %Y')
+        print(date)
 
         #breaking the date into segments
         date_year = date_object.strftime('%Y')
@@ -280,30 +281,26 @@ class Expense:
         num = self.item_qty.get()
         ctgy = self.item_ctgy.get()
         name = self.item_name.get()
-        prc = self.item_prc.get()
+        prc = self.unformat_price(self.item_prc.get())
         dbname = self.dbname
         table_name = date_year
+
 
         if self.conn is None:
             self.connect_to_db(table_name)
             print(f"Connecting to database {dbname}...")
-        else:
-            print(f"Already Connected to {dbname}.db")
-
-        # print(f"database: {dbname}")
-        # print(f"table: {table_name}")
 
         
         if num == 0 or num < 0:
             messagebox.showerror("Invalid Quantity", "Please Enter a Valid Item Quantity.")
-        elif date == "" or date_month == "" or date_day == "" or date_year == "" or date == " " or date_month == " "  or date_day == " " or date_year == " ":
-            messagebox.showerror("Invalid Date", "Please Enter a Valid Date")
-        elif ctgy == "" or ctgy == " ":
+        # elif date == "" or date_month == "" or date_day == "" or date_year == "" or date == " " or date_month == " "  or date_day == " " or date_year == " ":
+        #     messagebox.showerror("Invalid Date", "Please Enter a Valid Date")
+        elif ctgy == "" or ctgy == " " or ctgy.isnumeric():
             messagebox.showerror("Invalid Category", "Please Enter a Valid Category")
         elif name == "" or name == " ":
-            messagebox.showerror("Invalid Item", "Please Enter a Valid Item.")
-        elif prc == 0 or prc < 0 or prc == "" or prc == " ":
-            messagebox.showerror("Invalid Price", "Please Enter a Valid Item Price.")
+            messagebox.showerror("Invalid Item", "Please Enter a Valid Expense.")
+        elif prc == "0" or prc < "0" or prc == "" or prc == " " or prc.isalpha():
+            messagebox.showerror("Invalid Price", "Please Enter a Valid Price.")
         else:
             #db data transfer debugging
             print("\nAdding the following expense details.")
@@ -313,7 +310,7 @@ class Expense:
             print(f"Price: {prc}")
             print(f"Payment Method: {ctgy}\n")
             
-            query = f'INSERT INTO "{table_name}" (date, quantity, category, name, price) VALUES (?, ?, ?, ?, ?)'
+            query = "INSERT INTO \"{}\" (date, quantity, category, name, price) VALUES (?, ?, ?, ?, ?)".format(table_name)
             self.cur.execute(query, (date, num, ctgy ,name, prc))
             self.conn.commit()
             messagebox.showinfo('Success', 'Item added successfully!')
@@ -390,15 +387,17 @@ class Expense:
                 # print(expense)
                 total_item_price = expense[2] * expense[5]
                 sum += total_item_price
+                formatted_price = self.format_price(total_item_price)
 
-                self.txtarea.insert(END, f"[ID: {expense[0]}][Type: {expense[3]}]\n>{expense[4]}\t\t\t~{expense[2]}x ₱{expense[5]}\t\t\t    = ₱{total_item_price}\n")
+                self.txtarea.insert(END, f"[ID: {expense[0]}][Type: {expense[3]}]\n>{expense[4]}\t\t\t~{expense[2]}x ₱{expense[5]}\t\t\t    = ₱{formatted_price}\n")
 
                 self.txtarea.insert(END, f"\n")
             self.txtarea.insert(END, f"\n")
 
         # Insert total monthly expenses
+        total_sum = self.format_price(sum)
         self.txtarea.insert(END, f"{dashed_line}\n")
-        self.txtarea.insert(END, f"Overall Total Expenses \t\t\t\t\t\t    = ₱{sum}\n")
+        self.txtarea.insert(END, f"Overall Total Expenses for {table_name}\t\t\t\t\t\t    = ₱{total_sum}\n")
 
         #analysis
         # self.compare_month(table_name)
@@ -502,22 +501,25 @@ class Expense:
                     total_item_price = expense[2] * expense[5]
                     sum += total_item_price
 
+                    formatted_price = self.format_price(total_item_price)
+
                     #expense[0] - expense ID
                     #expense[1] - date
                     #expense[2] - qty
                     #expense[3] - category
                     #expense[4] - item name
                     #expense[5] - price
-                    self.txtarea.insert(END, f"[ID: {expense[0]}][Type: {expense[3]}]\n>{expense[4]}\t\t\t~{expense[2]}x ₱{expense[5]}\t\t\t    = ₱{total_item_price}\n")
+                    self.txtarea.insert(END, f"[ID: {expense[0]}][Type: {expense[3]}]\n>{expense[4]}\t\t\t~{expense[2]}x ₱{expense[5]}\t\t\t    = ₱{formatted_price}\n")
                     self.txtarea.insert(END, f"\n")
 
                 self.txtarea.insert(END, f"\n")
             self.txtarea.insert(END, f"\n{dashed_line}\n")
 
+            formatted_total = self.format_price(sum)
             if day == "" or day == " ":
-                self.txtarea.insert(END, f"Total Expenses as of {month}\t\t\t\t\t\t    = ₱{sum}\n")
+                self.txtarea.insert(END, f"Total Expenses as of {month}\t\t\t\t\t\t    = ₱{formatted_total}\n")
             else:
-                self.txtarea.insert(END, f"Total Expenses as of {month} {day}\t\t\t\t\t\t    = ₱{sum}\n")
+                self.txtarea.insert(END, f"Total Expenses as of {month} {day}\t\t\t\t\t\t    = ₱{formatted_total}\n")
 
             #analysis
             self.compare_month(table_name)
@@ -571,9 +573,10 @@ class Expense:
             #q = messagebox.askyesno('Deleting Expense', f'Are you sure do you want to DELETE this Expense Item? (This action cannot be undone)\n details:\nExpense ID: {eID}\nDate: {date}\nQuantity: {qty}\nCategory: {pay}\nItem: {name}\nPrice: {price}')
             q = messagebox.askyesno('Deleting Expense', f'\nAre you sure do you want to DELETE this Expense Item with the following details.\n(This action cannot be undone)\nExpense ID: {eID}\nDate: {date}\n')
             if q > 0:
-                self.cur.execute(f'DELETE FROM "{table_name}" WHERE id = ?', (eID))
+                self.cur.execute(f'DELETE FROM "{table_name}" WHERE id = ?', (eID,))
                 self.conn.commit()
                 messagebox.showinfo('Success!', 'Expense has been Deleted Successfully!')
+
                 self.delete_ID.set("")
                 self.delete_year.set("")
                 self.display_categorized_expenses()
@@ -635,16 +638,19 @@ class Expense:
             pay = expense[3]
             date = expense[1]
 
+            formatted_price = self.format_price(price)
+            print(formatted_price)
+
             print(f"Expense ID: {eID}")
             print(f"Date: {date}")
             print(f"Expense Name: {name}")
-            print(f"Expense Price: {price}")
+            print(f"Expense Price: {formatted_price}")
             print(f"Expense Quantity: {qty}")
             print(f"Payment Method: {pay}")
 
             # displaying the data into the edit fields
             self.edit_name.set(name)
-            self.edit_cost.set(price)
+            self.edit_cost.set(formatted_price)
             self.edit_qty.set(qty)
             self.edit_pay.set(pay)
             self.select_eedate.delete(0, 'end')  # Clear the DateEntry before setting the date
@@ -659,15 +665,15 @@ class Expense:
 
 
         date_str = self.select_eedate.get()
-        print(date_str)
         date_obj = datetime.strptime(date_str, '%m/%d/%Y')
 
         date = date_obj.strftime('%B %d, %Y')
         name = self.edit_name.get()
-        price = self.edit_cost.get()
+        price = self.edit_cost.get().replace(", ", "").replace(" ", "")
         qty = self.edit_qty.get()
         pay = self.edit_pay.get()
 
+        os.system('cls' if os.name == 'nt' else 'clear')  # clear the terminal
         print(f"database: {dbname}")
         print(f"table: {table_name}")
         print(f"Expense ID: {eID}")
@@ -676,6 +682,10 @@ class Expense:
         print(f"Expense Price: {price}")
         print(f"Expense Quantity: {qty}")
         print(f"Payment Method: {pay}")
+
+        unformat = self.unformat_price(price)
+
+        print(unformat)
         
 
         #connecting to database
@@ -689,7 +699,7 @@ class Expense:
         #Editing/updating the data from the database
         if name == "" or name == " ":
             messagebox.showerror("Invalid Expense Name", "Please Enter a Valid Expense Name.")
-        elif price == 0 or price < 0 or price == "" or price == " ":
+        elif price == "0" or price < "0" or price == "" or price == " ":
             messagebox.showerror("Invalid Expense Price", "Please Enter a Valid Expense Price.")
         elif qty == 0 or qty < 0 or qty == "" or qty == " ":
             messagebox.showerror("Invalid Expense Quantity", "Please Enter a Valid Expense Quantity.")
@@ -752,8 +762,15 @@ class Expense:
         # comparison logic
         highest = max(month_sum, key=month_sum.get)
         lowest = min(month_sum, key=month_sum.get)
-        print(f"Month with the Highest Expense is \"{highest}\" with the total of \"₱{month_sum[highest]}\".")
-        print(f"Month with the Lowest Expense is \"{lowest}\" with the total of \"₱{month_sum[lowest]}\".\n")
+
+        highest_spent = month_sum[highest]
+        lowest_spent = month_sum[lowest]
+
+        formatted_highest = self.format_price(highest_spent)
+        formatted_lowest = self.format_price(lowest_spent)
+
+        print(f"Month with the Highest Expense is \"{highest}\" with the total of \"₱{formatted_highest}\".")
+        print(f"Month with the Lowest Expense is \"{lowest}\" with the total of \"₱{formatted_lowest}\".\n")
 
         # statement for the comparison
         # if month_sum[highest] == month_sum[lowest]:
@@ -763,8 +780,8 @@ class Expense:
         # else:
         #     print(f"You spent less in {highest} with ₱{month_sum[highest]} than in the month {lowest} with ₱{month_sum[lowest]}.")
 
-        self.txtarea.insert(END, f"\nMost Expense Month: \"{highest}\" with the total of: \"₱{month_sum[highest]}\".\n")
-        self.txtarea.insert(END, f"Least Expense Month: \"{lowest}\" with the total of: \"₱{month_sum[lowest]}\".\n")
+        self.txtarea.insert(END, f"\nMost Expense Month: \"{highest}\" with the total of: \"₱{formatted_highest}\".\n")
+        self.txtarea.insert(END, f"Least Expense Month: \"{lowest}\" with the total of: \"₱{formatted_lowest}\".\n")
 
         #analysis of which item is the most expensive from that month
         #sample output: "You spent mostly on (item) this (month)."
@@ -824,14 +841,28 @@ class Expense:
         #comparison logic
         highest = max(year_sum, key=year_sum.get)
         lowest = min(year_sum, key=year_sum.get)
-        print(f"\nYear with the Highest Expense is \"{highest}\" with the total of \"₱{year_sum[highest]}\".")
-        print(f"Year with the Lowest Expense is \"{lowest}\" with the total of \"₱{year_sum[lowest]}\".\n")
 
-        self.txtarea.insert(END, f"\nMost Expense Year: \"{highest}\" with the Total of: \"₱{year_sum[highest]}\".\n")
-        self.txtarea.insert(END, f"Least Expense Year: \"{lowest}\" with the Total of: \"₱{year_sum[lowest]}\".\n\n")
+        formatted_highest = self.format_price(year_sum[highest])
+        formatted_lowest = self.format_price(year_sum[lowest])
+
+        print(f"\nYear with the Highest Expense is \"{highest}\" with the total of \"₱{formatted_highest}\".")
+        print(f"Year with the Lowest Expense is \"{lowest}\" with the total of \"₱{formatted_lowest}\".\n")
+
+        self.txtarea.insert(END, f"\nMost Expense Year: \"{highest}\" with the Total of: \"₱{formatted_highest}\".\n")
+        self.txtarea.insert(END, f"Least Expense Year: \"{lowest}\" with the Total of: \"₱{formatted_lowest}\".\n\n")
 
 #================================================================================================================================
     
+    def format_price(self, price):
+        formatted_price = "{:,}".format(price).replace(",", ", ")
+        return formatted_price
+    
+    def unformat_price(self, formatted_price):
+        unformatted_price = formatted_price.replace(", ", "").replace(" ", "").replace(",", "")
+        return unformatted_price
+
+#================================================================================================================================
+
     # setting all entries into blank
     def clear_item(self):
         op = messagebox.askyesno("Clearing input fields..","Do you want to Clear Everything?")
@@ -870,10 +901,11 @@ class Expense:
     # header for the database display   
     def header_month(self):
         month = self.display_m.get()
+        year = self.display_y.get()
         width = self.txtarea.winfo_width()
 
         display_width = self.txtarea.winfo_width()
-        text = f"| Expense List for {month} |"
+        text = f"| Expense List for {month} {year}|"
 
         num_dashes = display_width // self.divide
         header_dashes = "=" * num_dashes
